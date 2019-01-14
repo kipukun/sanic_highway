@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>sanic information highway</title>
+		<link rel="stylesheet" href="assets/style.css">
+	</head>
+	<body>
+		<header>
+			<a src="/" id="logo">Sanic Information Highway</a>
+			<nav>
+				<ul>
+					<li><a href="/">Home</a></li>
+					<li><a href="/help">Help</a></li>
+					<li><a href="/about">About</a></li>
+				</ul>
+			</nav>
+		</header>
+		<br />
+		<table>
+			<tr>
+				<th>Circle</th>
+				<th>Title</th>
+				<th>DLsite</th>
+				<th>VNDB</th>
+				<th>Misc.</th>
+				<th>Date</th>
+				<th>XDCC</th>
+				<th>HDD</th>
+				<th>Torrent</th>
+			</tr>
+			{{ range .ErogeList }}
+			<tr>
+				<td><a href="/circle?id={{.Circle.ID}}">{{.CircleName}}</a></td>
+				<td><a href="/ero?id={{.ID}}">{{.Title}}</a></td>
+				<td>{{.DLsiteID}}</td>
+				<td>{{.VNDBID}}</td>
+				<td>{{.MiscID}}</td>
+				<td>{{.Date}}</td>
+				<td>{{.OnXDCC}}</td>
+				<td>{{.OnHDD}}</td>
+				<td>{{.InTorrent}}</td>
+			</tr>
+			{{ end }}
+		</table>
+		<center>
+			<div class="pg">
+				<a href="/?p={{.Prev}}">◀</a>
+				{{ range .Pagination }}
+				<a href="/?p={{.}}" {{ if eq . $.Current }} class="current" {{end}}>{{.}}</a>
+				{{ end }}
+				<a href="/?p={{.Next}}">▶</a>
+		</center>
+
+	</body>
+</html>
