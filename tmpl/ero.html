@@ -22,7 +22,9 @@ Eroge not found.
 		<article>
 			<h1>{{ (index .Ero 0).Title }}</h1>
 			<p>Made by {{ (index .Ero 0).CircleName }}</p>
-			<img src="{{ (index .Ero 0).Image }}">
+			{{ range (index .Ero 0).Images }}
+				<img src="{{.}}"/>
+			{{end}}
 			<h3>Tags</h3>
 			{{ range .Tags }}
 				<span>{{.}}</span>

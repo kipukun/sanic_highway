@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 
 	"github.com/gocolly/colly"
 )
@@ -14,9 +12,6 @@ type Chobit struct {
 	Works []struct {
 		EmbedURL string `json:"embed_url"`
 	} `json:"works"`
-}
-
-type VNDB struct {
 }
 
 func dlsite(id string) {
@@ -37,14 +32,19 @@ func dlsite(id string) {
 	})
 
 	c.OnResponse(func(r *colly.Response) {
-		if _, err := os.Stat("./data/dlsite/" + id); os.IsNotExist(err) {
-			os.Mkdir("./data/dlsite/"+id, 0750)
-		}
+		/*
+			if _, err := os.Stat("./data/dlsite/" + id); os.IsNotExist(err) {
+				os.Mkdir("./data/dlsite/"+id, 0750)
+			}
+		*/
 
 		// download an image/video if we get it
 		switch r.Headers.Get("Content-Type") {
 		case "image/jpeg", "video/mp4":
-			r.Save("./data/dlsite/" + id + "/" + r.FileName())
+			// comment out for now, enable when we're on an actual server
+			// VERSIONING!
+			//r.Save("./data/dlsite/" + id + "/" + r.FileName())
+			fmt.Println("[scrape] fake saving mp4...", r.FileName())
 		case "text/javascript":
 			container := new(Chobit)
 			trim := bytes.TrimPrefix(r.Body, []byte("response("))
@@ -52,14 +52,16 @@ func dlsite(id string) {
 			json.Unmarshal(data, &container)
 			c.Visit(container.Works[0].EmbedURL)
 		case "text/html; charset=UTF-8":
-			fmt.Println("Saving content of " + id)
+			fmt.Println("[scrape] Saving content of " + id)
 
-			err := ioutil.WriteFile("./data/dlsite/"+id+"/body.html", r.Body, 0750)
-			if err != nil {
-				fmt.Println("[*] Error writing file for " + r.Request.URL.RequestURI())
-				fmt.Println(err.Error())
-			}
-			return
+			/*
+				err := ioutil.WriteFile("./data/dlsite/"+id+"/body.html", r.Body, 0750)
+				if err != nil {
+					fmt.Println("[*] Error writing file for " + r.Request.URL.RequestURI())
+					fmt.Println(err.Error())
+				}
+				return
+			*/
 
 		}
 
@@ -83,23 +85,27 @@ func vndb(id string) {
 	// save the HTML content of the page
 	c.OnResponse(func(r *colly.Response) {
 
-		if _, err := os.Stat("./data/vndb/v" + id); os.IsNotExist(err) {
-			os.Mkdir("./data/vndb/v"+id, 0750)
-		}
+		/*
+			if _, err := os.Stat("./data/vndb/v" + id); os.IsNotExist(err) {
+				os.Mkdir("./data/vndb/v"+id, 0750)
+			}
+		*/
 
 		switch r.Headers.Get("content-type") {
 		case "text/html; charset=UTF-8":
-			fmt.Println("Saving content of v" + id)
+			fmt.Println("[scrape] Saving content of v" + id)
 
-			err := ioutil.WriteFile("./data/vndb/v"+id+"/body.html", r.Body, 0750)
-			if err != nil {
-				fmt.Println("[*] Error writing file for " + r.Request.URL.RequestURI())
-				fmt.Println(err.Error())
-			}
+			/*
+				err := ioutil.WriteFile("./data/vndb/v"+id+"/body.html", r.Body, 0750)
+				if err != nil {
+					fmt.Println("[*] Error writing file for " + r.Request.URL.RequestURI())
+					fmt.Println(err.Error())
+				}
+			*/
 			return
 		case "image/jpeg":
-			fmt.Println("Saving " + r.FileName())
-			r.Save("./data/vndb/v" + id + "/" + r.FileName())
+			fmt.Println("[scrape] Saving " + r.FileName())
+			//r.Save("./data/vndb/v" + id + "/" + r.FileName())
 		}
 
 	})

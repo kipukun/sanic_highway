@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/kipukun/sanic_highway/db"
+	"github.com/kipukun/sanic_highway/scrape"
 )
 
 func load(name string) string {
@@ -38,6 +39,19 @@ func main() {
 	}
 	defer db.Conn.Close()
 
+	// scraper
+	errCh := make(chan error)
+
+	go func() {
+		scrape.Start(db, errCh)
+		for {
+			select {
+			case <-errCh:
+				log.Fatalln(<-errCh)
+			}
+		}
+	}()
+
 	if *ingestPtr != "NULL" {
 		fmt.Printf("[*] ingest mode detected\n[*] opening file " + *ingestPtr + "\n")
 		el, err := ingest(*ingestPtr)
@@ -48,7 +62,7 @@ func main() {
 		fmt.Println("[*] inserting into db...")
 		err = putXML(pel, db)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 			return
 		}
 		return

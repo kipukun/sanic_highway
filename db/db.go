@@ -8,12 +8,14 @@ import (
 type SqlDb struct {
 	Conn *sqlx.DB
 
-	GetAnEro     *sqlx.Stmt
-	GetSomeEro   *sqlx.Stmt
-	GetEroTags   *sqlx.Stmt
-	GetACircle   *sqlx.Stmt
-	GetCircleEro *sqlx.Stmt
-	IngestEro    *sqlx.NamedStmt
+	GetAnEro         *sqlx.Stmt
+	GetSomeEro       *sqlx.Stmt
+	GetEroTags       *sqlx.Stmt
+	GetACircle       *sqlx.Stmt
+	GetCircleEro     *sqlx.Stmt
+	IngestEro        *sqlx.NamedStmt
+	GetUnscrapedEro  *sqlx.Stmt
+	UpdateScrapedEro *sqlx.Stmt
 }
 
 func Init(config string) (*SqlDb, error) {
@@ -152,5 +154,20 @@ func (s *SqlDb) prepare() error {
 	if err != nil {
 		return err
 	}
+	s.GetUnscrapedEro, err = s.Conn.Preparex(
+		`SELECT dlsite_id 
+		FROM eroge 
+		WHERE scraped=False;`)
+	if err != nil {
+		return err
+	}
+	s.UpdateScrapedEro, err = s.Conn.Preparex(
+		`UPDATE eroge
+		SET scraped=True
+		WHERE dlsite_id=$1;`)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

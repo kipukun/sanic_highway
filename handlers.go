@@ -23,7 +23,7 @@ func parseParam(w http.ResponseWriter, r *http.Request, param string) (int64, er
 	q, ok := r.URL.Query()[param]
 	if !ok || len(q) < 1 {
 		http.Error(w, "Invalid query.", http.StatusBadRequest)
-		return 0, errors.New("[!!] parseID: error parsing param from query")
+		return 0, errors.New("[!] parseID: error parsing param from query")
 	}
 	id, err := strconv.ParseInt(q[0], 10, 64)
 	if err != nil {
@@ -56,7 +56,7 @@ func indexHandler(db *db.SqlDb) http.Handler {
 		}
 		err = db.GetSomeEro.Select(&erogeList, id*50)
 		if err != nil {
-			fmt.Printf("[!!] GetAllEro query failed!\n %s", err)
+			fmt.Printf("[!] GetAllEro query failed!\n %s", err)
 			return
 		}
 
@@ -102,11 +102,11 @@ func eroHandler(db *db.SqlDb) http.Handler {
 		}
 		err = db.GetAnEro.Select(&eroge, id)
 		if err != nil {
-			fmt.Printf("[!!] GetAnEro query failed!\n %s", err)
+			fmt.Printf("[!] GetAnEro query failed!\n %s", err)
 		}
 		err = db.GetEroTags.Select(&tags, id)
 		if err != nil {
-			fmt.Printf("[!!] GetEroTags query failed!\n %s", err)
+			fmt.Printf("[!] GetEroTags query failed!\n %s", err)
 		}
 
 		data := struct {
@@ -133,11 +133,11 @@ func circleHandler(db *db.SqlDb) http.Handler {
 		}
 		err = db.GetACircle.Select(&circle, id)
 		if err != nil {
-			fmt.Printf("[!!] GetAnEro query failed!\n %s", err)
+			fmt.Printf("[!] GetAnEro query failed!\n %s", err)
 		}
 		err = db.GetCircleEro.Select(&ero, id)
 		if err != nil {
-			fmt.Printf("[!!] GetCircleEro query failed!\n %s", err)
+			fmt.Printf("[!] GetCircleEro query failed!\n %s", err)
 		}
 
 		data := struct {
