@@ -1,0 +1,64 @@
+{% import "github.com/kipukun/sanic_highway/model" %}
+
+{% code 
+type IndexPage struct {
+	EroList []model.Eroge	
+	Pagination [5]int
+	Current, Prev, Next int
+}
+%}
+
+{% func (p *IndexPage) Title() %}
+<title>sanic information highway</title>
+{% endfunc %}
+
+
+{% func (p *IndexPage) Content() %}
+<table>
+	<tr>
+		<th>Circle</th>
+		<th>Title</th>
+		<th>DLsite</th>
+		<th>VNDB</th>
+		<th>Misc.</th>
+		<th>Date</th>
+		<th>XDCC</th>
+		<th>HDD</th>
+		<th>Torrent</th>
+	</tr>
+	{% for _, ero := range p.EroList %}
+	<tr>
+		<td><a href="/circle/{%d ero.Circle.ID %}">{%s ero.CircleName %}</a></td>
+		<td><a href="/ero/{%d ero.ID %}">{%s ero.Title %}</a></td>
+		<td>
+			{% for _, id := range ero.DLsiteIDs %}
+				<p>{%s id %}</p>
+			{% endfor %}
+		</td>
+		<td>
+			{% for _, id := range ero.VNDBIDs %}
+				<p>{%s id %}</p>
+			{% endfor %}
+		</td>
+		<td>
+			{% for _, id := range ero.MiscIDs %}
+				<p>{%s id %}</p>
+			{% endfor %}
+		</td>
+
+		<td>{%s ero.Date %}</td>
+		<td>{%v ero.OnXDCC %}</td>
+		<td>{%v ero.OnHDD %}</td>
+		<td>{%v ero.InTorrent %}</td>
+	</tr>
+	{%  endfor  %}
+</table>
+<center>
+	<div class="pg">
+		<a href="/page/{%d p.Prev %}">◀</a>
+		{% for _, pg := range p.Pagination  %}
+			<a href="/page/{%d pg %}" {% if pg == p.Current %} class="current" {% endif %}>{%d pg %}</a>
+		{%  endfor  %}
+		<a href="/page/{%d p.Next %}">▶</a>
+</center>
+{% endfunc %}

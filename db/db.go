@@ -5,7 +5,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type SqlDb struct {
+// Database holds the connection to the DB
+// as well as prepared statements on that connection.
+type Database struct {
 	Conn *sqlx.DB
 
 	GetAnEro         *sqlx.Stmt
@@ -18,25 +20,25 @@ type SqlDb struct {
 	UpdateScrapedEro *sqlx.Stmt
 }
 
-func Init(config string) (*SqlDb, error) {
+func Init(config string) (*Database, error) {
 	conn, err := sqlx.Open("postgres", config)
 	if err != nil {
 		return nil, err
 	}
-	s := &SqlDb{Conn: conn}
-	if err := s.Conn.Ping(); err != nil {
+	d := &Database{Conn: conn}
+	if err := d.Conn.Ping(); err != nil {
 		return nil, err
 	}
-	if err := s.createTables(); err != nil {
+	if err := d.createTables(); err != nil {
 		return nil, err
 	}
-	if err := s.prepare(); err != nil {
+	if err := d.prepare(); err != nil {
 		return nil, err
 	}
-	return s, nil
+	return d, nil
 }
 
-func (s *SqlDb) createTables() error {
+func (d *Database) createTables() error {
 	createEro := `
 		CREATE TABLE IF NOT EXISTS eroge (
 		id SERIAL NOT NULL PRIMARY KEY,
@@ -50,7 +52,7 @@ func (s *SqlDb) createTables() error {
 		circle_id INTEGER NOT NULL
 		);
 	`
-	rows, err := s.Conn.Query(createEro)
+	rows, err := d.Conn.Query(createEro)
 	if err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func (s *SqlDb) createTables() error {
 		website TEXT NOT NULL
 		);
 	`
-	rows, err = s.Conn.Query(createCircles)
+	rows, err = d.Conn.Query(createCircles)
 	if err != nil {
 		return err
 	}
@@ -73,7 +75,7 @@ func (s *SqlDb) createTables() error {
 		name TEXT NOT NULL
 		);
 	`
-	rows, err = s.Conn.Query(createSeries)
+	rows, err = d.Conn.Query(createSeries)
 	if err != nil {
 		return err
 	}
@@ -84,7 +86,7 @@ func (s *SqlDb) createTables() error {
 		name TEXT NOT NULL
 		);
 	`
-	rows, err = s.Conn.Query(createTags)
+	rows, err = d.Conn.Query(createTags)
 	if err != nil {
 		return err
 	}
@@ -95,12 +97,12 @@ func (s *SqlDb) createTables() error {
 		tag_name TEXT
 		);
 	`
-	rows, err = s.Conn.Query(createEroTags)
+	rows, err = d.Conn.Query(createEroTags)
 	if err != nil {
 		return err
 	}
 	rows.Close()
-	rows, err = s.Conn.Query(createTags)
+	rows, err = d.Conn.Query(createTags)
 	if err != nil {
 		return err
 	}
@@ -109,9 +111,9 @@ func (s *SqlDb) createTables() error {
 	return nil
 }
 
-func (s *SqlDb) prepare() error {
+func (d *Database) prepare() error {
 	var err error
-	s.GetSomeEro, err = s.Conn.Preparex(
+	d.GetSomeEro, err = d.Conn.Preparex(
 		`SELECT eroge.*,
 			circles.id AS "circle.id"
 		FROM eroge 
@@ -122,11 +124,11 @@ func (s *SqlDb) prepare() error {
 	if err != nil {
 		return err
 	}
-	s.GetAnEro, err = s.Conn.Preparex("SELECT * FROM eroge WHERE id=$1;")
+	d.GetAnEro, err = d.Conn.Preparex("SELECT * FROM eroge WHERE id=$1;")
 	if err != nil {
 		return err
 	}
-	s.GetEroTags, err = s.Conn.Preparex(
+	d.GetEroTags, err = d.Conn.Preparex(
 		`SELECT tag_name FROM eroge 
 		INNER JOIN ero_tags ON 
 		ero_tags.ero_id = eroge.id 
@@ -134,11 +136,11 @@ func (s *SqlDb) prepare() error {
 	if err != nil {
 		return err
 	}
-	s.GetACircle, err = s.Conn.Preparex("SELECT * FROM circles WHERE id=$1;")
+	d.GetACircle, err = d.Conn.Preparex("SELECT * FROM circles WHERE id=$1;")
 	if err != nil {
 		return err
 	}
-	s.GetCircleEro, err = s.Conn.Preparex(
+	d.GetCircleEro, err = d.Conn.Preparex(
 		`SELECT eroge.* FROM eroge 
 		INNER JOIN circles 
 		ON eroge.circle_name=circles.name 
@@ -146,25 +148,25 @@ func (s *SqlDb) prepare() error {
 	if err != nil {
 		return err
 	}
-	s.IngestEro, err = s.Conn.PrepareNamed(
+	d.IngestEro, err = d.Conn.PrepareNamed(
 		`INSERT INTO eroge 
-		(title, circle_name, dlsite_id, on_xdcc, on_hdd, in_torrent)
+		(title, circle_name, dlsite_ids, vndb_ids, on_xdcc, on_hdd, in_torrent)
 		VALUES 
-		(:name, :circle, :id, :xdcc, :hdd, :torrent);`)
+		(:name, :circle, :dlsiteids, :vndbids, :xdcc, :hdd, :torrent);`)
 	if err != nil {
 		return err
 	}
-	s.GetUnscrapedEro, err = s.Conn.Preparex(
-		`SELECT dlsite_id 
+	d.GetUnscrapedEro, err = d.Conn.Preparex(
+		`SELECT dlsite_ids 
 		FROM eroge 
 		WHERE scraped=False;`)
 	if err != nil {
 		return err
 	}
-	s.UpdateScrapedEro, err = s.Conn.Preparex(
+	d.UpdateScrapedEro, err = d.Conn.Preparex(
 		`UPDATE eroge
 		SET scraped=True
-		WHERE dlsite_id=$1;`)
+		WHERE dlsite_ids=$1;`)
 	if err != nil {
 		return err
 	}

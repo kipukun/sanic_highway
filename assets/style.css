@@ -3,8 +3,11 @@ ul {
 	margin: 0;
 	padding: 0;
 }
-li {
+ul > * {
 	display: inline;
+}
+.search {
+	float: right;
 }
 table {
 	text-align: center;

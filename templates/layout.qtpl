@@ -1,9 +1,16 @@
-{{ define "layout" }}
+{% interface 
+Page {
+	Title()
+	Content()
+}
+%}
+
+{% func PageTemplate(p Page) %}
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>sanic information highway</title>
-		<link rel="stylesheet" href="assets/style.css">
+		{%= p.Title() %}
+		<link rel="stylesheet" href="/assets/style.css">
 	</head>
 	<body>
 		<header>
@@ -16,8 +23,8 @@
 				</ul>
 			</nav>
 		</header>
-		<br />
-
+	
+		{%= p.Content() %}
 	</body>
 </html>
-{{ end }}
+{% endfunc %}

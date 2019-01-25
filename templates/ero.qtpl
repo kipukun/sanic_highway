@@ -1,0 +1,34 @@
+{% import "github.com/kipukun/sanic_highway/model" %}
+
+{% code 
+type ErogePage struct {
+	Ero []model.Eroge
+	Tags []string
+}
+%}
+
+
+{%  func (p *ErogePage) Title()  %}
+<title>{%s  p.Ero[0].Title  %}</title>
+{%  endfunc  %}
+
+
+{%  func (p *ErogePage) Content()  %}
+
+{% if len(p.Ero) == 0 %} 
+Eroge not found.
+{% else %}
+
+<article>
+	<h1>{%s  p.Ero[0].Title  %}</h1>
+	<p>Made by {%s p.Ero[0].CircleName  %}</p>
+	{% for _, img :=  range p.Ero[0].Images  %}
+		<img src="{%s img %}"/>
+	{% endfor %}
+	<h3>Tags</h3>
+	{% for _, tag :=  range p.Tags  %}
+		<span>{%s tag %}</span>
+	{% endfor %}
+</article>
+{% endif %}
+{% endfunc %} 

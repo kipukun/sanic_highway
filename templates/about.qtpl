@@ -1,0 +1,11 @@
+{% func Title() %}
+<title>About the Highway</title>
+{%  endfunc  %}
+
+{% func Content() %}
+<article>
+	<h1>About the Highway</title>
+	<br />
+	<img src="image/construction.gif" />
+</article>
+{%  endfunc  %}

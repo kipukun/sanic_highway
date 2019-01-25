@@ -9,8 +9,8 @@ import (
 )
 
 // scan takes in a SqlDb, and channels for both IDs to process and error to be sent up the chain.
-func scan(d *db.SqlDb, ids chan string, errCh chan error) {
-	rows := make([]string, 1)
+func scan(d *db.Database, ids chan string, errCh chan error) {
+	var rows []string
 	err := d.GetUnscrapedEro.Select(&rows)
 	if err != nil {
 		errCh <- err
@@ -22,7 +22,8 @@ func scan(d *db.SqlDb, ids chan string, errCh chan error) {
 	close(ids)
 }
 
-func Start(d *db.SqlDb, errCh chan error) {
+// Start takes in a DB and an error channel.
+func Start(d *db.Database, errCh chan error) {
 	var err error
 	ids := make(chan string)
 	go scan(d, ids, errCh)
