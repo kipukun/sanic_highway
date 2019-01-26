@@ -31,4 +31,12 @@ tr:nth-child(even) {background-color: #f2f2f2;}
 	padding: 8px 16px;
 }
 
+.stop {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	width: 50%;
+	text-align: center;
+}
+
 .pg a:hover:not(.active) {background-color: #ddd;}

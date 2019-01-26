@@ -22,7 +22,7 @@ var (
 
 //line templates/circle.qtpl:4
 type CirclePage struct {
-	Circle []model.Circle
+	Circle model.Circle
 	Ero    []model.Eroge
 }
 
@@ -32,7 +32,7 @@ func (p *CirclePage) StreamTitle(qw422016 *qt422016.Writer) {
 	qw422016.N().S(`
 <title>`)
 	//line templates/circle.qtpl:13
-	qw422016.E().S(p.Circle[0].Name)
+	qw422016.E().S(p.Circle.Name)
 	//line templates/circle.qtpl:13
 	qw422016.N().S(`</title>
 `)
@@ -69,84 +69,67 @@ func (p *CirclePage) Title() string {
 func (p *CirclePage) StreamContent(qw422016 *qt422016.Writer) {
 	//line templates/circle.qtpl:16
 	qw422016.N().S(`
-
-`)
-	//line templates/circle.qtpl:18
-	if len(p.Circle) == 0 {
-		//line templates/circle.qtpl:18
-		qw422016.N().S(` 
-	Circle not found.
-`)
-		//line templates/circle.qtpl:20
-	} else {
-		//line templates/circle.qtpl:20
-		qw422016.N().S(`
 	<article>
 		<h1>`)
-		//line templates/circle.qtpl:22
-		qw422016.E().S(p.Circle[0].Name)
-		//line templates/circle.qtpl:22
-		qw422016.N().S(`</h1>
+	//line templates/circle.qtpl:18
+	qw422016.E().S(p.Circle.Name)
+	//line templates/circle.qtpl:18
+	qw422016.N().S(`</h1>
 		<p>Website: `)
-		//line templates/circle.qtpl:23
-		qw422016.E().S(p.Circle[0].Website)
-		//line templates/circle.qtpl:23
-		qw422016.N().S(`</p>
+	//line templates/circle.qtpl:19
+	qw422016.E().S(p.Circle.Website)
+	//line templates/circle.qtpl:19
+	qw422016.N().S(`</p>
 	</article>
 	<article>
 		<h1>Eroge</h1>
 		`)
-		//line templates/circle.qtpl:27
-		for _, e := range p.Ero {
-			//line templates/circle.qtpl:27
-			qw422016.N().S(`
-		<p><a href="/ero/`)
-			//line templates/circle.qtpl:28
-			qw422016.N().D(e.ID)
-			//line templates/circle.qtpl:28
-			qw422016.N().S(`">`)
-			//line templates/circle.qtpl:28
-			qw422016.E().S(e.Title)
-			//line templates/circle.qtpl:28
-			qw422016.N().S(`</a></p>
-		`)
-			//line templates/circle.qtpl:29
-		}
-		//line templates/circle.qtpl:29
+	//line templates/circle.qtpl:23
+	for _, e := range p.Ero {
+		//line templates/circle.qtpl:23
 		qw422016.N().S(`
-	</article>
-`)
-		//line templates/circle.qtpl:31
+			<p><a href="/ero/`)
+		//line templates/circle.qtpl:24
+		qw422016.N().D(e.ID)
+		//line templates/circle.qtpl:24
+		qw422016.N().S(`">`)
+		//line templates/circle.qtpl:24
+		qw422016.E().S(e.Title)
+		//line templates/circle.qtpl:24
+		qw422016.N().S(`</a></p>
+		`)
+		//line templates/circle.qtpl:25
 	}
-	//line templates/circle.qtpl:31
-	qw422016.N().S(` 
+	//line templates/circle.qtpl:25
+	qw422016.N().S(`
+	</article>
 
 `)
-//line templates/circle.qtpl:33
+//line templates/circle.qtpl:28
 }
 
-//line templates/circle.qtpl:33
+//line templates/circle.qtpl:28
 func (p *CirclePage) WriteContent(qq422016 qtio422016.Writer) {
-	//line templates/circle.qtpl:33
+	//line templates/circle.qtpl:28
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line templates/circle.qtpl:33
+	//line templates/circle.qtpl:28
 	p.StreamContent(qw422016)
-	//line templates/circle.qtpl:33
+	//line templates/circle.qtpl:28
 	qt422016.ReleaseWriter(qw422016)
-//line templates/circle.qtpl:33
+//line templates/circle.qtpl:28
 }
 
-//line templates/circle.qtpl:33
+//line templates/circle.qtpl:28
 func (p *CirclePage) Content() string {
-	//line templates/circle.qtpl:33
+	//line templates/circle.qtpl:28
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line templates/circle.qtpl:33
+	//line templates/circle.qtpl:28
 	p.WriteContent(qb422016)
-	//line templates/circle.qtpl:33
+	//line templates/circle.qtpl:28
 	qs422016 := string(qb422016.B)
-	//line templates/circle.qtpl:33
+	//line templates/circle.qtpl:28
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line templates/circle.qtpl:33
+	//line templates/circle.qtpl:28
 	return qs422016
-//line templates/circle.qtpl:33
+//line templates/circle.qtpl:28
 }

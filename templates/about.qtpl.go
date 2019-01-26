@@ -17,76 +17,79 @@ var (
 	_ = qt422016.AcquireByteBuffer
 )
 
-//line templates/about.qtpl:1
-func StreamTitle(qw422016 *qt422016.Writer) {
-	//line templates/about.qtpl:1
+//line templates/about.qtpl:2
+type AboutPage struct{}
+
+//line templates/about.qtpl:5
+func (p *AboutPage) StreamTitle(qw422016 *qt422016.Writer) {
+	//line templates/about.qtpl:5
 	qw422016.N().S(`
 <title>About the Highway</title>
 `)
-//line templates/about.qtpl:3
+//line templates/about.qtpl:7
 }
 
-//line templates/about.qtpl:3
-func WriteTitle(qq422016 qtio422016.Writer) {
-	//line templates/about.qtpl:3
+//line templates/about.qtpl:7
+func (p *AboutPage) WriteTitle(qq422016 qtio422016.Writer) {
+	//line templates/about.qtpl:7
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line templates/about.qtpl:3
-	StreamTitle(qw422016)
-	//line templates/about.qtpl:3
+	//line templates/about.qtpl:7
+	p.StreamTitle(qw422016)
+	//line templates/about.qtpl:7
 	qt422016.ReleaseWriter(qw422016)
-//line templates/about.qtpl:3
+//line templates/about.qtpl:7
 }
 
-//line templates/about.qtpl:3
-func Title() string {
-	//line templates/about.qtpl:3
+//line templates/about.qtpl:7
+func (p *AboutPage) Title() string {
+	//line templates/about.qtpl:7
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line templates/about.qtpl:3
-	WriteTitle(qb422016)
-	//line templates/about.qtpl:3
+	//line templates/about.qtpl:7
+	p.WriteTitle(qb422016)
+	//line templates/about.qtpl:7
 	qs422016 := string(qb422016.B)
-	//line templates/about.qtpl:3
+	//line templates/about.qtpl:7
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line templates/about.qtpl:3
+	//line templates/about.qtpl:7
 	return qs422016
-//line templates/about.qtpl:3
+//line templates/about.qtpl:7
 }
 
-//line templates/about.qtpl:5
-func StreamContent(qw422016 *qt422016.Writer) {
-	//line templates/about.qtpl:5
+//line templates/about.qtpl:9
+func (p AboutPage) StreamContent(qw422016 *qt422016.Writer) {
+	//line templates/about.qtpl:9
 	qw422016.N().S(`
 <article>
 	<h1>About the Highway</title>
 	<br />
-	<img src="image/construction.gif" />
+	<img src="assets/image/construction.gif" />
 </article>
 `)
-//line templates/about.qtpl:11
+//line templates/about.qtpl:15
 }
 
-//line templates/about.qtpl:11
-func WriteContent(qq422016 qtio422016.Writer) {
-	//line templates/about.qtpl:11
+//line templates/about.qtpl:15
+func (p AboutPage) WriteContent(qq422016 qtio422016.Writer) {
+	//line templates/about.qtpl:15
 	qw422016 := qt422016.AcquireWriter(qq422016)
-	//line templates/about.qtpl:11
-	StreamContent(qw422016)
-	//line templates/about.qtpl:11
+	//line templates/about.qtpl:15
+	p.StreamContent(qw422016)
+	//line templates/about.qtpl:15
 	qt422016.ReleaseWriter(qw422016)
-//line templates/about.qtpl:11
+//line templates/about.qtpl:15
 }
 
-//line templates/about.qtpl:11
-func Content() string {
-	//line templates/about.qtpl:11
+//line templates/about.qtpl:15
+func (p AboutPage) Content() string {
+	//line templates/about.qtpl:15
 	qb422016 := qt422016.AcquireByteBuffer()
-	//line templates/about.qtpl:11
-	WriteContent(qb422016)
-	//line templates/about.qtpl:11
+	//line templates/about.qtpl:15
+	p.WriteContent(qb422016)
+	//line templates/about.qtpl:15
 	qs422016 := string(qb422016.B)
-	//line templates/about.qtpl:11
+	//line templates/about.qtpl:15
 	qt422016.ReleaseByteBuffer(qb422016)
-	//line templates/about.qtpl:11
+	//line templates/about.qtpl:15
 	return qs422016
-//line templates/about.qtpl:11
+//line templates/about.qtpl:15
 }

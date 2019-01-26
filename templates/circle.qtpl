@@ -2,7 +2,7 @@
 
 {% code 
 type CirclePage struct {
-	Circle []model.Circle	
+	Circle model.Circle	
 	Ero []model.Eroge
 }
 %}
@@ -10,24 +10,19 @@ type CirclePage struct {
 
 
 {%  func (p *CirclePage) Title()  %}
-<title>{%s  p.Circle[0].Name  %}</title>
+<title>{%s  p.Circle.Name  %}</title>
 {%  endfunc  %}
 
 {%  func (p *CirclePage) Content()  %}
-
-{% if len(p.Circle) == 0 %} 
-	Circle not found.
-{% else %}
 	<article>
-		<h1>{%s  p.Circle[0].Name  %}</h1>
-		<p>Website: {%s  p.Circle[0].Website  %}</p>
+		<h1>{%s  p.Circle.Name  %}</h1>
+		<p>Website: {%s  p.Circle.Website  %}</p>
 	</article>
 	<article>
 		<h1>Eroge</h1>
 		{% for _, e :=  range p.Ero  %}
-		<p><a href="/ero/{%d e.ID %}">{%s e.Title %}</a></p>
+			<p><a href="/ero/{%d e.ID %}">{%s e.Title %}</a></p>
 		{%  endfor  %}
 	</article>
-{% endif %} 
 
 {%  endfunc  %}

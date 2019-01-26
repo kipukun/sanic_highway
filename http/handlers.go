@@ -1,46 +1,14 @@
 package http
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/kipukun/sanic_highway/db"
 	"github.com/kipukun/sanic_highway/model"
 	"github.com/kipukun/sanic_highway/templates"
 )
-
-// Server holds the DB connection, configured routes for the http package
-// as well as the parsed templates.
-type Server struct {
-	db     *db.Database
-	routes *mux.Router
-}
-
-func Init(path string, d *db.Database) (*Server, error) {
-	r := mux.NewRouter()
-
-	srv := &Server{
-		db:     d,
-		routes: r,
-	}
-
-	return srv, nil
-}
-
-func (s *Server) Start() {
-	s.routes.Handle("/", s.indexHandler(true))
-	s.routes.Handle("/page/{page}", s.indexHandler(false))
-	// heh
-	ass := http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/")))
-	s.routes.PathPrefix("/assets/").Handler(ass)
-	s.routes.Handle("/ero/{id}", s.eroHandler())
-	s.routes.Handle("/circle/{id}", s.circleHandler())
-
-	log.Fatal(http.ListenAndServe(":1337", s.routes))
-}
 
 func (s *Server) indexHandler(index bool) http.Handler {
 
@@ -62,7 +30,7 @@ func (s *Server) indexHandler(index bool) http.Handler {
 
 		err = s.db.GetSomeEro.Select(&erogeList, pg*50)
 		if err != nil {
-			fmt.Printf("[!] GetAllEro query failed!\n %s", err)
+			log.Println("indexHandler: GetSomeEro query failed", err.Error())
 			return
 		}
 
@@ -91,20 +59,48 @@ func (s *Server) indexHandler(index bool) http.Handler {
 	})
 }
 
+func (s *Server) aboutHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		p := &templates.AboutPage{}
+		templates.WritePageTemplate(w, p)
+		return
+	})
+}
+
+func (s *Server) stopHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		p := &templates.StopPage{}
+		templates.WritePageTemplate(w, p)
+		return
+	})
+}
+
 func (s *Server) eroHandler() http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var eroge []model.Eroge
+		var eroge model.Eroge
 		var tags []string
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
-		err = s.db.GetAnEro.Select(&eroge, id)
 		if err != nil {
-			fmt.Printf("[!] GetAnEro query failed!\n %s", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println("strconv:", err.Error())
+			return
+
+		}
+		err = s.db.GetAnEro.Get(&eroge, id)
+		if err != nil {
+			p := &templates.StopPage{}
+			templates.WritePageTemplate(w, p)
+			log.Println("eroHandler: GetAnEro query failed", err.Error())
+			return
 		}
 		err = s.db.GetEroTags.Select(&tags, id)
 		if err != nil {
-			fmt.Printf("[!] GetEroTags query failed!\n %s", err)
+			p := &templates.StopPage{}
+			templates.WritePageTemplate(w, p)
+			log.Println("eroHandler: GetEroTags query failed", err.Error())
+			return
 		}
 
 		p := &templates.ErogePage{
@@ -121,16 +117,30 @@ func (s *Server) eroHandler() http.Handler {
 func (s *Server) circleHandler() http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var circle []model.Circle
+		var circle model.Circle
 		var ero []model.Eroge
-		id := 0
-		err := s.db.GetACircle.Select(&circle, id)
+		vars := mux.Vars(r)
+		id, err := strconv.Atoi(vars["id"])
 		if err != nil {
-			fmt.Printf("[!] GetAnEro query failed!\n %s", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println("strconv:", err.Error())
+			return
+
+		}
+
+		err = s.db.GetACircle.Get(&circle, id)
+		if err != nil {
+			p := &templates.StopPage{}
+			templates.WritePageTemplate(w, p)
+			log.Println("circleHandler: GetACircle query failed", err.Error())
+			return
 		}
 		err = s.db.GetCircleEro.Select(&ero, id)
 		if err != nil {
-			fmt.Printf("[!] GetCircleEro query failed!\n %s", err)
+			p := &templates.StopPage{}
+			templates.WritePageTemplate(w, p)
+			log.Println("circleHandler: GetCircleEro query failed", err.Error())
+			return
 		}
 
 		p := &templates.CirclePage{

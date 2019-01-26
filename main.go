@@ -48,13 +48,9 @@ func main() {
 		return
 	}
 
-	fmt.Println("[*] setting up http...")
+	fmt.Println("[*] starting up http...")
 
-	srv, err := http.Init("tmpl/", d)
-	if err != nil {
-		panic(err)
-	}
-
+	srv := http.Init("tmpl/", d)
 	srv.Start()
 
 }

@@ -1,11 +1,15 @@
-{% func Title() %}
+{% code 
+type AboutPage struct {}
+%}
+
+{% func (p *AboutPage) Title() %}
 <title>About the Highway</title>
 {%  endfunc  %}
 
-{% func Content() %}
+{% func (p AboutPage) Content() %}
 <article>
 	<h1>About the Highway</title>
 	<br />
-	<img src="image/construction.gif" />
+	<img src="assets/image/construction.gif" />
 </article>
 {%  endfunc  %}

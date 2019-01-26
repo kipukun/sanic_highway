@@ -1,0 +1,15 @@
+{% code 
+type StopPage struct {}
+%}
+
+{% func (p *StopPage) Title() %}
+<title>turn back</title>
+{% endfunc %}
+
+{% func (p *StopPage) Content() %}
+<div class="stop">
+	<img src="/assets/image/stop.png" >
+	<h2>You must turn back.</h2>
+</div>
+{% endfunc %}
+
