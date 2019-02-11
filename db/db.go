@@ -63,7 +63,7 @@ func (d *Database) createTables() error {
 	createCircles := `
 		CREATE TABLE IF NOT EXISTS circles (
 		id SERIAL NOT NULL PRIMARY KEY,
-		name TEXT NOT NULL,
+		name TEXT NOT NULL UNIQUE,
 		website TEXT NOT NULL
 		);
 	`
@@ -96,8 +96,8 @@ func (d *Database) createTables() error {
 	rows.Close()
 	createEroTags := `
 		CREATE TABLE IF NOT EXISTS ero_tags (
-		ero_id INT,
-		tag_name TEXT
+		ero_id INT NOT NULL,
+		tag_name TEXT NOT NULL 
 		);
 	`
 	rows, err = d.Conn.Query(createEroTags)
