@@ -50,7 +50,7 @@ func main() {
 
 	fmt.Println("[*] starting up http...")
 
-	srv := http.Init("tmpl/", d)
+	srv := http.Init(d)
 	srv.Start()
 
 }

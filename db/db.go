@@ -41,15 +41,18 @@ func Init(config string) (*Database, error) {
 func (d *Database) createTables() error {
 	createEro := `
 		CREATE TABLE IF NOT EXISTS eroge (
-		id SERIAL NOT NULL PRIMARY KEY,
-		title TEXT NOT NULL,
-		title_jp TEXT NOT NULL,
-		date TEXT NOT NULL,
-		genres INTEGER[] NOT NULL,
-		series INTEGER,
-		ids TEXT[][],
-		image TEXT NOT NULL,
-		circle_id INTEGER NOT NULL
+		    id integer NOT NULL,
+		    title text NOT NULL,
+		    circle_name text,
+		    dlsite_ids text[],
+		    vndb_ids text[],
+		    misc_ids text[],
+		    date text DEFAULT '11/2/1971'::text NOT NULL,
+		    on_xdcc boolean DEFAULT false NOT NULL,
+		    on_hdd boolean DEFAULT false NOT NULL,
+		    in_torrent boolean DEFAULT false NOT NULL,
+		    images text[] DEFAULT '{https://via.placeholder.com/400x400.png?text=cum,https://via.placeholder.com/400x400.png?text=cum,https://via.placeholder.com/400x400.png?text=cum}'::text[] NOT NULL,
+		    scraped boolean DEFAULT false NOT NULL
 		);
 	`
 	rows, err := d.Conn.Query(createEro)

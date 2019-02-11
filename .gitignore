@@ -5,8 +5,7 @@
 *.so
 *.dylib
 *.swp
-*.txt
-sanic_highway
+cmd/highway/highway
 data/
 
 # Test binary, build with `go test -c`
