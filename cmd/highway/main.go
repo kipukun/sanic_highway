@@ -1,4 +1,3 @@
-//go:generate qtc -dir=templates
 package main
 
 import (

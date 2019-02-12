@@ -1,10 +1,12 @@
 BINARY = highway
 BUILD_DIR = cmd/highway
 
-all: build run
+all: build gen run
 build:
 	go build ./$(BUILD_DIR)
+gen:
+	qtc -dir=templates
 run:
 	./$(BINARY)
 
-.PHONY: build run
+.PHONY: build gen run
