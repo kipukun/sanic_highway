@@ -5,7 +5,7 @@
 *.so
 *.dylib
 *.swp
-cmd/highway/highway
+highway
 data/
 
 # Test binary, build with `go test -c`

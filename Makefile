@@ -1,6 +1,10 @@
-all: run
+BINARY = highway
+BUILD_DIR = cmd/highway
+
+all: build run
 build:
-	go build cmd/highway/main.go
+	go build ./$(BUILD_DIR)
 run:
-	go build cmd/highway/main.go
-	./cmd/highway/highway
+	./$(BINARY)
+
+.PHONY: build run

@@ -1,8 +1,11 @@
 package http
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 
 	"github.com/gorilla/mux"
 	"github.com/kipukun/sanic_highway/db"
@@ -38,6 +41,18 @@ func (s *Server) Start() {
 	s.routes.Handle("/circle/{id}", s.circleHandler())
 
 	s.routes.NotFoundHandler = s.stopHandler()
+
+	// handle sigint
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt)
+
+	go func() {
+		select {
+		case sig := <-c:
+			fmt.Printf("[*] got %s signal. aborting...\n", sig)
+			os.Exit(0)
+		}
+	}()
 
 	log.Fatal(http.ListenAndServe(":1337", s.routes))
 }
