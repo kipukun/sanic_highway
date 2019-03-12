@@ -119,6 +119,11 @@ func (d *Database) IngestXML(file string) error {
 			fmt.Println("IngestXML: error exec'ing", err.Error())
 			return err
 		}
+		_, err = d.UpdateCircles.Exec(e.Circle)
+		if err != nil {
+			fmt.Println("UpdateCircles: error putting:", err.Error())
+			return err
+		}
 	}
 	return nil
 }

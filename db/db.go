@@ -16,6 +16,7 @@ type Database struct {
 	GetACircle       *sqlx.Stmt
 	GetCircleEro     *sqlx.Stmt
 	IngestEro        *sqlx.NamedStmt
+	UpdateCircles    *sqlx.Stmt
 	GetUnscrapedEro  *sqlx.Stmt
 	UpdateScrapedEro *sqlx.Stmt
 }
@@ -41,7 +42,7 @@ func Init(config string) (*Database, error) {
 func (d *Database) createTables() error {
 	createEro := `
 		CREATE TABLE IF NOT EXISTS eroge (
-		    id integer NOT NULL,
+		    id SERIAL PRIMARY KEY,
 		    title text NOT NULL,
 		    circle_name text,
 		    dlsite_ids text[],
@@ -60,11 +61,19 @@ func (d *Database) createTables() error {
 		return err
 	}
 	rows.Close()
+	updateErogeKey := `
+		ALTER SEQUENCE eroge_id_seq RESTART WITH 1000;	
+	`
+	rows, err = d.Conn.Query(updateErogeKey)
+	if err != nil {
+		return err
+	}
+	rows.Close()
 	createCircles := `
 		CREATE TABLE IF NOT EXISTS circles (
 		id SERIAL NOT NULL PRIMARY KEY,
 		name TEXT NOT NULL UNIQUE,
-		website TEXT NOT NULL
+		website TEXT NOT NULL DEFAULT 'https://crouton.net'
 		);
 	`
 	rows, err = d.Conn.Query(createCircles)
@@ -156,6 +165,12 @@ func (d *Database) prepare() error {
 		(title, circle_name, dlsite_ids, vndb_ids, on_xdcc, on_hdd, in_torrent)
 		VALUES 
 		(:name, :circle, :dlsiteids, :vndbids, :xdcc, :hdd, :torrent);`)
+	if err != nil {
+		return err
+	}
+	d.UpdateCircles, err = d.Conn.Preparex(
+		`INSERT INTO circles (name) VALUES ($1)
+		ON CONFLICT ON CONSTRAINT circles_name_key DO NOTHING;`)
 	if err != nil {
 		return err
 	}
