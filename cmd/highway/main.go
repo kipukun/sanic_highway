@@ -17,7 +17,7 @@ func main() {
 
 	// db
 	fmt.Println("[*] initializing db...")
-	d, err := db.Init("postgres://pqgo:cock@localhost/pqgodb?sslmode=require")
+	d, err := db.Init("postgres://postgres:cock@localhost/pqgodb?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
