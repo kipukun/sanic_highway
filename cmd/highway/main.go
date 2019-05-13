@@ -1,55 +1,37 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"fmt"
-	"log"
+	"os"
 
-	"github.com/kipukun/sanic_highway/db"
-	"github.com/kipukun/sanic_highway/http"
-	"github.com/kipukun/sanic_highway/scrape"
+	"github.com/google/subcommands"
 )
 
 func main() {
-	ingestPtr := flag.String("ingest", "NULL", "file to ingest")
-	scrapePtr := flag.Bool("scrape", false, "enable scraping mode")
-	flag.Parse()
-
-	// db
+	/* db
 	fmt.Println("[*] initializing db...")
 	d, err := db.Init("postgres://postgres:cock@localhost/pqgodb?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer d.Conn.Close()
+	*/
 
-	if *scrapePtr {
-		// scraper
-		errCh := make(chan error)
-		go func() {
-			scrape.Start(d, errCh)
-			for {
-				select {
-				case <-errCh:
-					log.Fatalln(<-errCh)
-				}
-			}
-		}()
-	}
+	subcommands.Register(subcommands.HelpCommand(), "")
+	subcommands.Register(subcommands.FlagsCommand(), "")
+	subcommands.Register(subcommands.CommandsCommand(), "")
+	subcommands.Register(&scraperCmd{}, "")
+	subcommands.Register(&ingestCmd{}, "")
+	flag.Parse()
 
-	if *ingestPtr != "NULL" {
-		fmt.Println("[*] starting ingest...")
-		err := d.IngestXML(*ingestPtr)
-		if err != nil {
-			fmt.Println("[!] IngestXML failed:", err.Error())
-			return
-		}
-		return
-	}
+	ctx := context.Background()
+	os.Exit(int(subcommands.Execute(ctx)))
 
-	fmt.Println("[*] starting up http...")
+	/*
+		fmt.Println("[*] starting up http...")
 
-	srv := http.Init(d)
-	srv.Start()
+		srv := http.Init(d)
+		srv.Start() */
 
 }
