@@ -35,7 +35,7 @@ func (s *Server) Start() {
 	s.routes.Handle("/about", s.aboutHandler())
 	s.routes.Handle("/page/{page}", s.indexHandler(false))
 	// heh
-	ass := http.StripPrefix("/assets/", http.FileServer(http.Dir("../../assets/")))
+	ass := http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/")))
 	s.routes.PathPrefix("/assets/").Handler(ass)
 	s.routes.Handle("/ero/{id}", s.eroHandler())
 	s.routes.Handle("/circle/{id}", s.circleHandler())
