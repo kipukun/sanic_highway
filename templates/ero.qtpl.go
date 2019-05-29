@@ -22,123 +22,87 @@ var (
 
 //line templates/ero.qtpl:4
 type ErogePage struct {
-	Ero  model.Eroge
-	Tags []string
+	Ero model.Eroge
 }
 
-//line templates/ero.qtpl:11
+//line templates/ero.qtpl:10
 func (p *ErogePage) StreamTitle(qw422016 *qt422016.Writer) {
-//line templates/ero.qtpl:11
+//line templates/ero.qtpl:10
 	qw422016.N().S(`
 <title>`)
-//line templates/ero.qtpl:12
-	qw422016.E().S(p.Ero.Title)
-//line templates/ero.qtpl:12
+//line templates/ero.qtpl:11
+	qw422016.E().S(p.Ero.Filename)
+//line templates/ero.qtpl:11
 	qw422016.N().S(`</title>
 `)
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 }
 
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 func (p *ErogePage) WriteTitle(qq422016 qtio422016.Writer) {
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 	p.StreamTitle(qw422016)
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 	qt422016.ReleaseWriter(qw422016)
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 }
 
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 func (p *ErogePage) Title() string {
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 	p.WriteTitle(qb422016)
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 	qs422016 := string(qb422016.B)
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 	return qs422016
-//line templates/ero.qtpl:13
+//line templates/ero.qtpl:12
 }
 
-//line templates/ero.qtpl:16
+//line templates/ero.qtpl:15
 func (p *ErogePage) StreamContent(qw422016 *qt422016.Writer) {
-//line templates/ero.qtpl:16
+//line templates/ero.qtpl:15
 	qw422016.N().S(`
 
 <article>
 	<h1>`)
-//line templates/ero.qtpl:19
-	qw422016.E().S(p.Ero.Title)
-//line templates/ero.qtpl:19
+//line templates/ero.qtpl:18
+	qw422016.E().S(p.Ero.Filename)
+//line templates/ero.qtpl:18
 	qw422016.N().S(`</h1>
-	<p>Made by `)
-//line templates/ero.qtpl:20
-	qw422016.E().S(p.Ero.CircleName)
-//line templates/ero.qtpl:20
-	qw422016.N().S(`</p>
-	`)
-//line templates/ero.qtpl:21
-	for _, img := range p.Ero.Images {
-//line templates/ero.qtpl:21
-		qw422016.N().S(`
-		<img src="`)
-//line templates/ero.qtpl:22
-		qw422016.E().S(img)
-//line templates/ero.qtpl:22
-		qw422016.N().S(`"/>
-	`)
-//line templates/ero.qtpl:23
-	}
-//line templates/ero.qtpl:23
-	qw422016.N().S(`
-	<h3>Tags</h3>
-	`)
-//line templates/ero.qtpl:25
-	for _, tag := range p.Tags {
-//line templates/ero.qtpl:25
-		qw422016.N().S(`
-		<span>`)
-//line templates/ero.qtpl:26
-		qw422016.E().S(tag)
-//line templates/ero.qtpl:26
-		qw422016.N().S(`</span>
-	`)
-//line templates/ero.qtpl:27
-	}
-//line templates/ero.qtpl:27
-	qw422016.N().S(`
 </article>
+
 `)
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 }
 
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 func (p *ErogePage) WriteContent(qq422016 qtio422016.Writer) {
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 	p.StreamContent(qw422016)
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 	qt422016.ReleaseWriter(qw422016)
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 }
 
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 func (p *ErogePage) Content() string {
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 	p.WriteContent(qb422016)
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 	qs422016 := string(qb422016.B)
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 	return qs422016
-//line templates/ero.qtpl:29
+//line templates/ero.qtpl:21
 }

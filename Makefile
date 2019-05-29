@@ -1,7 +1,7 @@
 BINARY = highway
 BUILD_DIR = cmd/highway
 
-all: build gen run
+all: gen build run
 build:
 	go build ./$(BUILD_DIR)
 gen:
@@ -9,4 +9,4 @@ gen:
 run:
 	./$(BINARY)
 
-.PHONY: build gen run
+.PHONY: gen build run

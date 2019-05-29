@@ -16,40 +16,11 @@ type IndexPage struct {
 {% func (p *IndexPage) Content() %}
 <table>
 	<tr>
-		<th>Circle</th>
 		<th>Title</th>
-		<th>DLsite</th>
-		<th>VNDB</th>
-		<th>Misc.</th>
-		<th>Date</th>
-		<th>XDCC</th>
-		<th>HDD</th>
-		<th>Torrent</th>
 	</tr>
 	{% for _, ero := range p.EroList %}
 	<tr>
-		<td><a href="/circle/{%d ero.Circle.ID %}">{%s ero.CircleName %}</a></td>
-		<td><a href="/ero/{%d ero.ID %}">{%s ero.Title %}</a></td>
-		<td>
-			{% for _, id := range ero.DLsiteIDs %}
-				<p>{%s id %}</p>
-			{% endfor %}
-		</td>
-		<td>
-			{% for _, id := range ero.VNDBIDs %}
-				<p>{%s id %}</p>
-			{% endfor %}
-		</td>
-		<td>
-			{% for _, id := range ero.MiscIDs %}
-				<p>{%s id %}</p>
-			{% endfor %}
-		</td>
-
-		<td>{%s ero.Date %}</td>
-		<td>{%v ero.OnXDCC %}</td>
-		<td>{%v ero.OnHDD %}</td>
-		<td>{%v ero.InTorrent %}</td>
+		<td><a href="/ero/{%d ero.ID %}">{%s ero.Filename %}</a></td>
 	</tr>
 	{%  endfor  %}
 </table>

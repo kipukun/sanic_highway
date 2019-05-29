@@ -26,110 +26,105 @@ type CirclePage struct {
 	Ero    []model.Eroge
 }
 
-//line templates/circle.qtpl:12
+//line templates/circle.qtpl:10
 func (p *CirclePage) StreamTitle(qw422016 *qt422016.Writer) {
-//line templates/circle.qtpl:12
+//line templates/circle.qtpl:10
 	qw422016.N().S(`
 <title>`)
-//line templates/circle.qtpl:13
+//line templates/circle.qtpl:11
 	qw422016.E().S(p.Circle.Name)
-//line templates/circle.qtpl:13
+//line templates/circle.qtpl:11
 	qw422016.N().S(`</title>
 `)
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 }
 
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 func (p *CirclePage) WriteTitle(qq422016 qtio422016.Writer) {
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 	p.StreamTitle(qw422016)
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 	qt422016.ReleaseWriter(qw422016)
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 }
 
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 func (p *CirclePage) Title() string {
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 	p.WriteTitle(qb422016)
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 	qs422016 := string(qb422016.B)
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 	return qs422016
-//line templates/circle.qtpl:14
+//line templates/circle.qtpl:12
 }
 
-//line templates/circle.qtpl:16
+//line templates/circle.qtpl:14
 func (p *CirclePage) StreamContent(qw422016 *qt422016.Writer) {
-//line templates/circle.qtpl:16
+//line templates/circle.qtpl:14
 	qw422016.N().S(`
 	<article>
 		<h1>`)
-//line templates/circle.qtpl:18
+//line templates/circle.qtpl:16
 	qw422016.E().S(p.Circle.Name)
-//line templates/circle.qtpl:18
+//line templates/circle.qtpl:16
 	qw422016.N().S(`</h1>
-		<p>Website: `)
-//line templates/circle.qtpl:19
-	qw422016.E().S(p.Circle.Website)
-//line templates/circle.qtpl:19
-	qw422016.N().S(`</p>
 	</article>
 	<article>
 		<h1>Eroge</h1>
 		`)
-//line templates/circle.qtpl:23
+//line templates/circle.qtpl:20
 	for _, e := range p.Ero {
-//line templates/circle.qtpl:23
+//line templates/circle.qtpl:20
 		qw422016.N().S(`
 			<p><a href="/ero/`)
-//line templates/circle.qtpl:24
+//line templates/circle.qtpl:21
 		qw422016.N().D(e.ID)
-//line templates/circle.qtpl:24
+//line templates/circle.qtpl:21
 		qw422016.N().S(`">`)
-//line templates/circle.qtpl:24
-		qw422016.E().S(e.Title)
-//line templates/circle.qtpl:24
+//line templates/circle.qtpl:21
+		qw422016.E().S(e.Filename)
+//line templates/circle.qtpl:21
 		qw422016.N().S(`</a></p>
 		`)
-//line templates/circle.qtpl:25
+//line templates/circle.qtpl:22
 	}
-//line templates/circle.qtpl:25
+//line templates/circle.qtpl:22
 	qw422016.N().S(`
 	</article>
 
 `)
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 }
 
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 func (p *CirclePage) WriteContent(qq422016 qtio422016.Writer) {
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 	p.StreamContent(qw422016)
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 	qt422016.ReleaseWriter(qw422016)
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 }
 
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 func (p *CirclePage) Content() string {
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 	p.WriteContent(qb422016)
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 	qs422016 := string(qb422016.B)
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 	return qs422016
-//line templates/circle.qtpl:28
+//line templates/circle.qtpl:25
 }

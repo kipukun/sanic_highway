@@ -79,7 +79,6 @@ func (s *Server) eroHandler() http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var eroge model.Eroge
-		var tags []string
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
 		if err != nil {
@@ -95,17 +94,8 @@ func (s *Server) eroHandler() http.Handler {
 			log.Println("eroHandler: GetAnEro query failed", err.Error())
 			return
 		}
-		err = s.db.GetEroTags.Select(&tags, id)
-		if err != nil {
-			p := &templates.StopPage{}
-			templates.WritePageTemplate(w, p)
-			log.Println("eroHandler: GetEroTags query failed", err.Error())
-			return
-		}
-
 		p := &templates.ErogePage{
-			Ero:  eroge,
-			Tags: tags,
+			Ero: eroge,
 		}
 
 		templates.WritePageTemplate(w, p)
@@ -114,6 +104,7 @@ func (s *Server) eroHandler() http.Handler {
 	})
 }
 
+/*
 func (s *Server) circleHandler() http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -153,3 +144,4 @@ func (s *Server) circleHandler() http.Handler {
 		return
 	})
 }
+*/

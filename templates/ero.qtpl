@@ -3,27 +3,19 @@
 {% code 
 type ErogePage struct {
 	Ero model.Eroge
-	Tags []string
 }
 %}
 
 
 {%  func (p *ErogePage) Title()  %}
-<title>{%s  p.Ero.Title  %}</title>
+<title>{%s  p.Ero.Filename  %}</title>
 {%  endfunc  %}
 
 
 {%  func (p *ErogePage) Content()  %}
 
 <article>
-	<h1>{%s  p.Ero.Title  %}</h1>
-	<p>Made by {%s p.Ero.CircleName  %}</p>
-	{% for _, img :=  range p.Ero.Images  %}
-		<img src="{%s img %}"/>
-	{% endfor %}
-	<h3>Tags</h3>
-	{% for _, tag :=  range p.Tags  %}
-		<span>{%s tag %}</span>
-	{% endfor %}
+	<h1>{%s  p.Ero.Filename  %}</h1>
 </article>
+
 {% endfunc %} 

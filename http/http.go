@@ -38,7 +38,7 @@ func (s *Server) Start() {
 	ass := http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/")))
 	s.routes.PathPrefix("/assets/").Handler(ass)
 	s.routes.Handle("/ero/{id}", s.eroHandler())
-	s.routes.Handle("/circle/{id}", s.circleHandler())
+	// s.routes.Handle("/circle/{id}", s.circleHandler())
 
 	s.routes.NotFoundHandler = s.stopHandler()
 
