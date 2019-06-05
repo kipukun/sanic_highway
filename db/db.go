@@ -13,7 +13,7 @@ type Database struct {
 }
 
 type errExecer struct {
-	db  *Database
+	c   *sqlx.DB
 	err error
 }
 
@@ -21,16 +21,18 @@ func (ee *errExecer) exec(stmt string) {
 	if ee.err != nil {
 		return
 	}
-	_, ee.err = ee.db.Conn.Exec(stmt)
+	_, ee.err = ee.c.Exec(stmt)
 }
 
 func (ee *errExecer) prepare(prep **sqlx.Stmt, query string) {
 	if ee.err != nil {
 		return
 	}
-	*prep, ee.err = ee.db.Conn.Preparex(query)
+	*prep, ee.err = ee.c.Preparex(query)
 }
 
+// Init takes in a DB configuration string and returns a Database connection
+// and nil, or nil and the error reported by prep functions otherwise.
 func Init(config string) (*Database, error) {
 	conn, err := sqlx.Open("postgres", config)
 	if err != nil {
@@ -50,7 +52,7 @@ func Init(config string) (*Database, error) {
 }
 
 func (d *Database) create() error {
-	ee := &errExecer{db: d}
+	ee := &errExecer{db: d.Conn}
 	ee.exec(`CREATE TABLE IF NOT EXISTS eroge (
 		    id SERIAL PRIMARY KEY,
 		    fname text NOT NULL UNIQUE,
@@ -76,7 +78,7 @@ func (d *Database) create() error {
 }
 
 func (d *Database) prepare() error {
-	ee := &errExecer{db: d}
+	ee := &errExecer{db: d.Conn}
 	ee.prepare(&d.Eros, "SELECT * FROM eroge OFFSET $1 LIMIT 50;")
 	ee.prepare(&d.Ero, "SELECT * FROM eroge WHERE id=$1;")
 	ee.prepare(&d.IngestEro, `INSERT INTO eroge (fname) VALUES ($1)
