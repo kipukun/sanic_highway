@@ -50,37 +50,25 @@ func Init(config string) (*Database, error) {
 }
 
 func (d *Database) create() error {
-	var stmt string
 	ee := &errExecer{db: d}
-	stmt = `
-		CREATE TABLE IF NOT EXISTS eroge (
+	ee.exec(`CREATE TABLE IF NOT EXISTS eroge (
 		    id SERIAL PRIMARY KEY,
 		    fname text NOT NULL UNIQUE,
 		    vndb_ids text[] NOT NULL,
-		    dlsite_ids text[] NOT NULL
-		);
-	`
-	ee.exec(stmt)
-	stmt = `
-		ALTER SEQUENCE eroge_id_seq RESTART WITH 1000;	
-	`
-	ee.exec(stmt)
-	stmt = `
-		CREATE TABLE IF NOT EXISTS users (
+		    dlsite_ids text[] NOT NULL );`)
+
+	ee.exec("ALTER SEQUENCE eroge_id_seq RESTART WITH 1000;")
+
+	ee.exec(`CREATE TABLE IF NOT EXISTS users (
 		id uuid NOT NULL PRIMARY KEY,
 		username text NOT NULL,
-		password text NOT NULL
-		);
-	`
-	ee.exec(stmt)
-	stmt = `
-		CREATE TABLE IF NOT EXISTS sessions (
+		password text NOT NULL );`)
+
+	ee.exec(`CREATE TABLE IF NOT EXISTS sessions (
 		id uuid NOT NULL,
 		user_id uuid NOT NULL REFERENCES users(id),
-		key text NOT NULL
-		);
-	`
-	ee.exec(stmt)
+		key text NOT NULL );`)
+
 	if ee.err != nil {
 		return ee.err
 	}
