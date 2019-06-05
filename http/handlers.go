@@ -13,24 +13,32 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Error embeds the standard error interface, along with a Status method
+// that returns an HTTP status code.
 type Error interface {
 	error
 	Status() int
 }
 
+// StatusError represents an HTTP error, containing an HTTP status code
+// and the error that caused it.
 type StatusError struct {
 	Code int
 	Err  error
 }
 
+// Error satisifes the error interface.
 func (se StatusError) Error() string {
 	return se.Err.Error()
 }
 
+// Status satisifies the Error interface.
 func (se StatusError) Status() int {
 	return se.Code
 }
 
+// Handler embeds the Server state and contains an H function that
+// represents a handler for a certain HTTP route.
 type Handler struct {
 	*Server
 	H func(s *Server, w http.ResponseWriter, r *http.Request) error
