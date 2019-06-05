@@ -8,20 +8,27 @@ import (
 // Database holds the connection to the DB
 // as well as prepared statements on that connection.
 type Database struct {
-	Conn *sqlx.DB
+	Conn                             *sqlx.DB
+	Ero, Eros, IngestEro, InsertUser *sqlx.Stmt
+}
 
-	GetAnEro   *sqlx.Stmt
-	GetSomeEro *sqlx.Stmt
-	/*
-		GetEroTags       *sqlx.Stmt
-		GetACircle       *sqlx.Stmt
-		GetCircleEro     *sqlx.Stmt
-	*/
-	IngestEro *sqlx.Stmt
-	/*
-		UpdateCircles    *sqlx.Stmt
-		GetUnscrapedEro  *sqlx.Stmt
-		UpdateScrapedEro *sqlx.Stmt */
+type errExecer struct {
+	db  *Database
+	err error
+}
+
+func (ee *errExecer) exec(stmt string) {
+	if ee.err != nil {
+		return
+	}
+	_, ee.err = ee.db.Conn.Exec(stmt)
+}
+
+func (ee *errExecer) prepare(prep **sqlx.Stmt, query string) {
+	if ee.err != nil {
+		return
+	}
+	*prep, ee.err = ee.db.Conn.Preparex(query)
 }
 
 func Init(config string) (*Database, error) {
@@ -33,7 +40,7 @@ func Init(config string) (*Database, error) {
 	if err := d.Conn.Ping(); err != nil {
 		return nil, err
 	}
-	if err := d.createTables(); err != nil {
+	if err := d.create(); err != nil {
 		return nil, err
 	}
 	if err := d.prepare(); err != nil {
@@ -42,122 +49,54 @@ func Init(config string) (*Database, error) {
 	return d, nil
 }
 
-func (d *Database) createTables() error {
-	createEro := `
+func (d *Database) create() error {
+	var stmt string
+	ee := &errExecer{db: d}
+	stmt = `
 		CREATE TABLE IF NOT EXISTS eroge (
 		    id SERIAL PRIMARY KEY,
-		    fname text NOT NULL UNIQUE
+		    fname text NOT NULL UNIQUE,
+		    vndb_ids text[] NOT NULL,
+		    dlsite_ids text[] NOT NULL
 		);
 	`
-	rows, err := d.Conn.Query(createEro)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-	updateErogeKey := `
+	ee.exec(stmt)
+	stmt = `
 		ALTER SEQUENCE eroge_id_seq RESTART WITH 1000;	
 	`
-	rows, err = d.Conn.Query(updateErogeKey)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-	createCircles := `
-		CREATE TABLE IF NOT EXISTS circles (
-		id SERIAL NOT NULL PRIMARY KEY,
-		name TEXT NOT NULL UNIQUE
+	ee.exec(stmt)
+	stmt = `
+		CREATE TABLE IF NOT EXISTS users (
+		id uuid NOT NULL PRIMARY KEY,
+		username text NOT NULL,
+		password text NOT NULL
 		);
 	`
-	rows, err = d.Conn.Query(createCircles)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-	createTags := `
-		CREATE TABLE IF NOT EXISTS tags (
-		id SERIAL NOT NULL PRIMARY KEY,
-		name TEXT NOT NULL
+	ee.exec(stmt)
+	stmt = `
+		CREATE TABLE IF NOT EXISTS sessions (
+		id uuid NOT NULL,
+		user_id uuid NOT NULL REFERENCES users(id),
+		key text NOT NULL
 		);
 	`
-	rows, err = d.Conn.Query(createTags)
-	if err != nil {
-		return err
+	ee.exec(stmt)
+	if ee.err != nil {
+		return ee.err
 	}
-	rows.Close()
-	createEroTags := `
-		CREATE TABLE IF NOT EXISTS ero_tags (
-		ero_id INT NOT NULL,
-		tag_name TEXT NOT NULL 
-		);
-	`
-	rows, err = d.Conn.Query(createEroTags)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-
 	return nil
 }
 
 func (d *Database) prepare() error {
-	var err error
-	d.GetSomeEro, err = d.Conn.Preparex(
-		`SELECT * FROM eroge OFFSET $1 LIMIT 50;`)
-	if err != nil {
-		return err
-	}
-	d.GetAnEro, err = d.Conn.Preparex("SELECT * FROM eroge WHERE id=$1;")
-	if err != nil {
-		return err
-	}
-	/*
-		d.GetEroTags, err = d.Conn.Preparex(
-			`SELECT tag_name FROM eroge
-			INNER JOIN ero_tags ON
-			ero_tags.ero_id = eroge.id
-			WHERE eroge.id=$1`)
-		if err != nil {
-			return err
-		}
-		d.GetACircle, err = d.Conn.Preparex("SELECT * FROM circles WHERE id=$1;")
-		if err != nil {
-			return err
-		}
-		d.GetCircleEro, err = d.Conn.Preparex(
-			`SELECT eroge.* FROM eroge
-			INNER JOIN circles
-			ON eroge.circle_name=circles.name
-			WHERE circles.id=$1;`)
-		if err != nil {
-			return err
-		}*/
-	d.IngestEro, err = d.Conn.Preparex(
-		`INSERT INTO eroge (fname) VALUES ($1)
+	ee := &errExecer{db: d}
+	ee.prepare(&d.Eros, "SELECT * FROM eroge OFFSET $1 LIMIT 50;")
+	ee.prepare(&d.Ero, "SELECT * FROM eroge WHERE id=$1;")
+	ee.prepare(&d.IngestEro, `INSERT INTO eroge (fname) VALUES ($1)
 		ON CONFLICT ON CONSTRAINT eroge_fname_key DO NOTHING;`)
-	if err != nil {
-		return err
+	ee.prepare(&d.InsertUser, `INSERT INTO users (id, username, password) VALUES
+				($1, $2, $3);`)
+	if ee.err != nil {
+		return ee.err
 	}
-	/*
-		d.UpdateCircles, err = d.Conn.Preparex(
-			`INSERT INTO circles (name) VALUES ($1)
-			ON CONFLICT ON CONSTRAINT circles_name_key DO NOTHING;`)
-		if err != nil {
-			return err
-		}
-		d.GetUnscrapedEro, err = d.Conn.Preparex(
-			`SELECT dlsite_ids
-			FROM eroge
-			WHERE scraped=False;`)
-		if err != nil {
-			return err
-		}
-		d.UpdateScrapedEro, err = d.Conn.Preparex(
-			`UPDATE eroge
-			SET scraped=True
-			WHERE dlsite_ids=$1;`)
-		if err != nil {
-			return err
-		}
-	*/
 	return nil
 }

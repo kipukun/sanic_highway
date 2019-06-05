@@ -69,95 +69,121 @@ func (p *IndexPage) StreamContent(qw422016 *qt422016.Writer) {
 <table>
 	<tr>
 		<th>Title</th>
+		<th>VNDB</th>
+		<th>DLsite</th>
 	</tr>
 	`)
-//line templates/index.qtpl:21
+//line templates/index.qtpl:23
 	for _, ero := range p.EroList {
-//line templates/index.qtpl:21
+//line templates/index.qtpl:23
 		qw422016.N().S(`
 	<tr>
-		<td><a href="/ero/`)
-//line templates/index.qtpl:23
+		<td>
+			<a href="/ero/`)
+//line templates/index.qtpl:26
 		qw422016.N().D(ero.ID)
-//line templates/index.qtpl:23
+//line templates/index.qtpl:26
 		qw422016.N().S(`">`)
-//line templates/index.qtpl:23
+//line templates/index.qtpl:26
 		qw422016.E().S(ero.Filename)
-//line templates/index.qtpl:23
+//line templates/index.qtpl:26
+		qw422016.N().S(`</a>
+			<button style="float: right;">Copy</button>
+		</td>
+		<td>
+			<a href="/ero/`)
+//line templates/index.qtpl:30
+		qw422016.N().D(ero.ID)
+//line templates/index.qtpl:30
+		qw422016.N().S(`">`)
+//line templates/index.qtpl:30
+		qw422016.E().V(ero.VNDB)
+//line templates/index.qtpl:30
+		qw422016.N().S(`</a> <br />
+			<input type="text" /> <span>+ // - </span>
+		</td>
+		<td><a href="/ero/`)
+//line templates/index.qtpl:33
+		qw422016.N().D(ero.ID)
+//line templates/index.qtpl:33
+		qw422016.N().S(`">`)
+//line templates/index.qtpl:33
+		qw422016.E().V(ero.DLsite)
+//line templates/index.qtpl:33
 		qw422016.N().S(`</a></td>
 	</tr>
 	`)
-//line templates/index.qtpl:25
+//line templates/index.qtpl:35
 	}
-//line templates/index.qtpl:25
+//line templates/index.qtpl:35
 	qw422016.N().S(`
 </table>
 <center>
 	<div class="pg">
 		<a href="/page/`)
-//line templates/index.qtpl:29
+//line templates/index.qtpl:39
 	qw422016.N().D(p.Prev)
-//line templates/index.qtpl:29
+//line templates/index.qtpl:39
 	qw422016.N().S(`">◀</a>
 		`)
-//line templates/index.qtpl:30
+//line templates/index.qtpl:40
 	for _, pg := range p.Pagination {
-//line templates/index.qtpl:30
+//line templates/index.qtpl:40
 		qw422016.N().S(`
 			<a href="/page/`)
-//line templates/index.qtpl:31
+//line templates/index.qtpl:41
 		qw422016.N().D(pg)
-//line templates/index.qtpl:31
+//line templates/index.qtpl:41
 		qw422016.N().S(`" `)
-//line templates/index.qtpl:31
+//line templates/index.qtpl:41
 		if pg == p.Current {
-//line templates/index.qtpl:31
+//line templates/index.qtpl:41
 			qw422016.N().S(` class="current" `)
-//line templates/index.qtpl:31
+//line templates/index.qtpl:41
 		}
-//line templates/index.qtpl:31
+//line templates/index.qtpl:41
 		qw422016.N().S(`>`)
-//line templates/index.qtpl:31
+//line templates/index.qtpl:41
 		qw422016.N().D(pg)
-//line templates/index.qtpl:31
+//line templates/index.qtpl:41
 		qw422016.N().S(`</a>
 		`)
-//line templates/index.qtpl:32
+//line templates/index.qtpl:42
 	}
-//line templates/index.qtpl:32
+//line templates/index.qtpl:42
 	qw422016.N().S(`
 		<a href="/page/`)
-//line templates/index.qtpl:33
+//line templates/index.qtpl:43
 	qw422016.N().D(p.Next)
-//line templates/index.qtpl:33
+//line templates/index.qtpl:43
 	qw422016.N().S(`">▶</a>
 </center>
 `)
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 }
 
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 func (p *IndexPage) WriteContent(qq422016 qtio422016.Writer) {
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 	p.StreamContent(qw422016)
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 	qt422016.ReleaseWriter(qw422016)
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 }
 
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 func (p *IndexPage) Content() string {
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 	p.WriteContent(qb422016)
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 	qs422016 := string(qb422016.B)
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 	return qs422016
-//line templates/index.qtpl:35
+//line templates/index.qtpl:45
 }

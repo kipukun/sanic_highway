@@ -21,7 +21,6 @@ func main() {
 	var i = flag.String("ingest", "NULL", "file to ingest")
 	flag.Parse()
 
-	fmt.Println(*i)
 	if *i != "NULL" {
 		f, err := os.Open(*i)
 		if err != nil {

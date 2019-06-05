@@ -17,10 +17,20 @@ type IndexPage struct {
 <table>
 	<tr>
 		<th>Title</th>
+		<th>VNDB</th>
+		<th>DLsite</th>
 	</tr>
 	{% for _, ero := range p.EroList %}
 	<tr>
-		<td><a href="/ero/{%d ero.ID %}">{%s ero.Filename %}</a></td>
+		<td>
+			<a href="/ero/{%d ero.ID %}">{%s ero.Filename %}</a>
+			<button style="float: right;">Copy</button>
+		</td>
+		<td>
+			<a href="/ero/{%d ero.ID %}">{%v ero.VNDB %}</a> <br />
+			<input type="text" /> <span>+ // - </span>
+		</td>
+		<td><a href="/ero/{%d ero.ID %}">{%v ero.DLsite %}</a></td>
 	</tr>
 	{%  endfor  %}
 </table>
