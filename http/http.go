@@ -11,13 +11,14 @@ import (
 	"github.com/kipukun/sanic_highway/db"
 )
 
-// Server holds the DB connection, configured routes for the http package
-// as well as the parsed templates.
+// Server holds the DB connection, and configured routes for the http package.
 type Server struct {
 	DB     *db.Database
 	routes *mux.Router
 }
 
+// Init takes in a Database and returns a new Server intialized with the
+// default mux.Router and the database connection.
 func Init(d *db.Database) *Server {
 	r := mux.NewRouter()
 	srv := &Server{
