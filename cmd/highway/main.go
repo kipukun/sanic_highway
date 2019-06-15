@@ -12,7 +12,7 @@ import (
 
 func main() {
 	fmt.Println("[*] initializing db...")
-	d, err := db.Init("postgres://postgres:cock@localhost/pqgodb?sslmode=disable")
+	d, err := db.Init("postgres://postgres:cock@127.0.0.1/test?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

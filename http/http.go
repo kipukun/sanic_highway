@@ -36,6 +36,7 @@ func (s *Server) Start() {
 	ass := http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/")))
 	s.routes.PathPrefix("/assets/").Handler(ass)
 	s.routes.Handle("/ero/{id}", Handler{s, getEro})
+	s.routes.Handle("/profile", Handler{s, getProfile})
 	s.routes.Handle("/login", Handler{s, getLogin})
 	s.routes.Handle("/auth/login", Handler{s, postLogin}).Methods("POST")
 	s.routes.Handle("/signup", Handler{s, getSignup})

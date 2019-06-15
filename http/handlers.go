@@ -6,10 +6,13 @@ import (
 	"net/http"
 	"strconv"
 
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/kipukun/sanic_highway/model"
 	"github.com/kipukun/sanic_highway/templates"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -53,6 +56,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Printf("HTTP %d - %s", e.Status(), e)
 			http.Error(w, e.Error(), e.Status())
 		default:
+			log.Printf("HTTP 500 - %s", e.Error())
 			http.Error(w, http.StatusText(http.StatusInternalServerError),
 				http.StatusInternalServerError)
 		}
@@ -139,20 +143,62 @@ func getEro(s *Server, w http.ResponseWriter, r *http.Request) error {
 
 	return nil
 }
+func getProfile(s *Server, w http.ResponseWriter, r *http.Request) error {
+	c, err := r.Cookie("id")
+	if err != nil {
+		return err
+	}
+	w.Write([]byte(c.String()))
+	return nil
+}
 func getLogin(s *Server, w http.ResponseWriter, r *http.Request) error {
+	_, err := r.Cookie("id")
+	if err == nil {
+		http.Redirect(w, r, "/profile", http.StatusFound)
+		return nil
+	}
+
 	w.Write([]byte(`
 		<html><head><title>sekrit</title></head>
 		<body>
 		<form action="/auth/login" method="post">
-			<input type="text" name="user" value="user" required><br />
-			<input type="password" name="pass" value="pass" required><br />
+			<input type="text" name="user" value="user" required>
+			<input type="password" name="pass" value="pass" required>
 			<input type="submit" value="submit">
 		</form>
-		</body></html>
-		`))
+		</body></html>`))
 	return nil
 }
 func postLogin(s *Server, w http.ResponseWriter, r *http.Request) error {
+	user, pass := r.PostFormValue("user"), r.PostFormValue("pass")
+	row := &model.User{}
+	err := s.DB.User.Get(row, user)
+	if err != nil {
+		return err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(row.Password), []byte(pass))
+	if err != nil {
+		return StatusError{http.StatusForbidden, errors.New("bad password")}
+	}
+	id, err := uuid.NewUUID()
+	if err != nil {
+		return err
+	}
+	_, err = s.DB.CreateSession.Exec(id, row.ID)
+	if err != nil {
+		return err
+	}
+	expire := time.Now().AddDate(0, 0, 1)
+	cookie := &http.Cookie{
+		Domain:  "localhost",
+		Path:    "/",
+		Name:    "id",
+		Value:   id.String(),
+		Expires: expire,
+	}
+	http.SetCookie(w, cookie)
+	w.Write([]byte(`<html><body>you are now logged in.
+			go to your <a href="/">profile</a></body></html>`))
 	return nil
 }
 func getSignup(s *Server, w http.ResponseWriter, r *http.Request) error {
@@ -165,15 +211,14 @@ func getSignup(s *Server, w http.ResponseWriter, r *http.Request) error {
 			<input type="password" name="conf" placeholder="pass" required><br />
 			<input type="submit" value="submit">
 		</form>
-		</body></html>
-		`))
+		</body></html>`))
 	return nil
 }
 func postSignup(s *Server, w http.ResponseWriter, r *http.Request) error {
 	user, pass := r.PostFormValue("user"), r.PostFormValue("pass")
 	if pass != r.PostFormValue("conf") {
 		return StatusError{http.StatusNotAcceptable,
-			errors.New(`Password does not match confirmation.`)}
+			errors.New(`password does not match confirmation`)}
 	}
 	id, err := uuid.NewUUID()
 	if err != nil {
@@ -185,7 +230,16 @@ func postSignup(s *Server, w http.ResponseWriter, r *http.Request) error {
 	}
 	_, err = s.DB.InsertUser.Exec(id, user, string(hash))
 	if err != nil {
+		if err, ok := err.(*pq.Error); ok {
+			switch err.Code.Name() {
+			case "unique_violation":
+				return StatusError{http.StatusConflict,
+					errors.New("username already exists")}
+			}
+		}
 		return StatusError{http.StatusInternalServerError, err}
 	}
+	w.Write([]byte(`<html><body>you've signed up. 
+			you can now <a href="/login">login</a></body></html>`))
 	return nil
 }
