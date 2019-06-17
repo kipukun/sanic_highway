@@ -146,9 +146,15 @@ func getEro(s *Server, w http.ResponseWriter, r *http.Request) error {
 func getProfile(s *Server, w http.ResponseWriter, r *http.Request) error {
 	c, err := r.Cookie("id")
 	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusUnauthorized)
+		return nil
+	}
+	u := &model.User{}
+	err = s.DB.Lookup.Get(u, c.Value)
+	if err != nil {
 		return err
 	}
-	w.Write([]byte(c.String()))
+	w.Write([]byte("Hello " + u.Username))
 	return nil
 }
 func getLogin(s *Server, w http.ResponseWriter, r *http.Request) error {

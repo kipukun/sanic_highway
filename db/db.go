@@ -10,7 +10,7 @@ import (
 type Database struct {
 	Conn                                            *sqlx.DB
 	Ero, Eros, IngestEro, InsertUser, CreateSession *sqlx.Stmt
-	User                                            *sqlx.Stmt
+	User, Lookup                                    *sqlx.Stmt
 }
 
 type errExecer struct {
@@ -69,7 +69,7 @@ func (d *Database) create() error {
 
 	ee.exec(`CREATE TABLE IF NOT EXISTS sessions (
 		id uuid NOT NULL,
-		user_id uuid NOT NULL REFERENCES users(id) );`)
+		user_id uuid UNIQUE NOT NULL REFERENCES users(id) );`)
 
 	if ee.err != nil {
 		return ee.err
@@ -86,8 +86,14 @@ func (d *Database) prepare() error {
 	ee.prepare(&d.InsertUser, `INSERT INTO users (id, username, password) VALUES
 				($1, $2, $3);`)
 	ee.prepare(&d.CreateSession, `INSERT INTO sessions (id, user_id) 
-				VALUES ($1, $2);`)
+				VALUES ($1, $2)
+				ON CONFLICT ON CONSTRAINT sessions_user_id_key
+				DO UPDATE SET id = $1;`)
 	ee.prepare(&d.User, `SELECT * FROM users WHERE username = $1 LIMIT 1;`)
+	ee.prepare(&d.Lookup, `SELECT users.* FROM users
+			INNER JOIN sessions 
+			ON sessions.user_id = users.id
+			AND sessions.id = $1;`)
 	if ee.err != nil {
 		return ee.err
 	}
