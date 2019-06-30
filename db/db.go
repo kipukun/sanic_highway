@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 // Database holds the connection to the DB
@@ -10,6 +11,7 @@ import (
 type Database struct {
 	Conn                                            *sqlx.DB
 	Ero, Eros, IngestEro, InsertUser, CreateSession *sqlx.Stmt
+	CreateMeta, RemoveMeta, UpdateMeta, DeleteMeta  *sqlx.Stmt
 	User, Lookup                                    *sqlx.Stmt
 }
 
@@ -22,14 +24,17 @@ func (ee *errExecer) exec(stmt string) {
 	if ee.err != nil {
 		return
 	}
-	_, ee.err = ee.c.Exec(stmt)
+	_, err := ee.c.Exec(stmt)
+	ee.err = errors.Wrap(err, stmt)
 }
 
 func (ee *errExecer) prepare(prep **sqlx.Stmt, query string) {
+	var err error
 	if ee.err != nil {
 		return
 	}
-	*prep, ee.err = ee.c.Preparex(query)
+	*prep, err = ee.c.Preparex(query)
+	ee.err = errors.Wrap(err, query)
 }
 
 // Init takes in a DB configuration string and returns a Database connection
@@ -55,21 +60,20 @@ func Init(config string) (*Database, error) {
 func (d *Database) create() error {
 	ee := &errExecer{c: d.Conn}
 	ee.exec(`CREATE TABLE IF NOT EXISTS eroge (
-		    id SERIAL PRIMARY KEY,
-		    fname text NOT NULL UNIQUE,
-		    vndb_ids text[] DEFAULT '{}' NOT NULL,
-		    dlsite_ids text[] DEFAULT '{}' NOT NULL );`)
+			id SERIAL PRIMARY KEY,
+			fname text NOT NULL UNIQUE, 
+			metaids jsonb DEFAULT '{}');`)
 
 	ee.exec("ALTER SEQUENCE eroge_id_seq RESTART WITH 1000;")
 
 	ee.exec(`CREATE TABLE IF NOT EXISTS users (
-		id uuid NOT NULL PRIMARY KEY,
-		username text UNIQUE NOT NULL,
-		password text NOT NULL );`)
+			id uuid NOT NULL PRIMARY KEY,
+			username text UNIQUE NOT NULL,
+			password text NOT NULL );`)
 
 	ee.exec(`CREATE TABLE IF NOT EXISTS sessions (
-		id uuid NOT NULL,
-		user_id uuid UNIQUE NOT NULL REFERENCES users(id) );`)
+			id uuid NOT NULL,
+			user_id uuid UNIQUE NOT NULL REFERENCES users(id) );`)
 
 	if ee.err != nil {
 		return ee.err
@@ -79,8 +83,8 @@ func (d *Database) create() error {
 
 func (d *Database) prepare() error {
 	ee := &errExecer{c: d.Conn}
-	ee.prepare(&d.Eros, "SELECT * FROM eroge OFFSET $1 LIMIT 50;")
-	ee.prepare(&d.Ero, "SELECT * FROM eroge WHERE id=$1;")
+	ee.prepare(&d.Eros, "SELECT * FROM eroge ORDER BY id ASC OFFSET $1 LIMIT $2;")
+	ee.prepare(&d.Ero, `SELECT * FROM eroge WHERE id = $1`)
 	ee.prepare(&d.IngestEro, `INSERT INTO eroge (fname) VALUES ($1)
 		ON CONFLICT ON CONSTRAINT eroge_fname_key DO NOTHING;`)
 	ee.prepare(&d.InsertUser, `INSERT INTO users (id, username, password) VALUES
@@ -89,6 +93,15 @@ func (d *Database) prepare() error {
 				VALUES ($1, $2)
 				ON CONFLICT ON CONSTRAINT sessions_user_id_key
 				DO UPDATE SET id = $1;`)
+	ee.prepare(&d.CreateMeta, `UPDATE eroge SET metaids =
+	metaids || jsonb_build_object($1::text, $2::jsonb) WHERE id = $3;`)
+	ee.prepare(&d.RemoveMeta, `UPDATE eroge SET metaids =
+			jsonb_set(metaids, $1::text[], (metaids->$2::text) - -1)
+			WHERE id = $3;`)
+	ee.prepare(&d.UpdateMeta, `UPDATE eroge SET metaids =
+	jsonb_insert(metaids, $1::text[], $2::jsonb, true) WHERE id = $3;`)
+	ee.prepare(&d.DeleteMeta, `UPDATE eroge SET metaids = metaids - $1::text
+			WHERE id = $2;`)
 	ee.prepare(&d.User, `SELECT * FROM users WHERE username = $1 LIMIT 1;`)
 	ee.prepare(&d.Lookup, `SELECT users.* FROM users
 			INNER JOIN sessions 

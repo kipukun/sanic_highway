@@ -1,0 +1,16 @@
+{% import "github.com/kipukun/sanic_highway/model" %}
+
+{% code 
+type AdminMainPage struct {
+	User *model.User
+}
+%}
+
+{% func (p *AdminMainPage) Title() %}
+<title>highway administration</title>
+{% endfunc %}
+
+
+{% func (p *AdminMainPage) Content() %}
+<h1>hello {%s p.User.Username %}</h1>
+{% endfunc %}

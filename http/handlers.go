@@ -40,14 +40,16 @@ func (se StatusError) Status() int {
 	return se.Code
 }
 
+type HandlerFunc = func(s *Server, w http.ResponseWriter, r *http.Request) error
+
 // Handler embeds the Server state and contains an H function that
 // represents a handler for a certain HTTP route.
 type Handler struct {
 	*Server
-	H func(s *Server, w http.ResponseWriter, r *http.Request) error
+	H HandlerFunc
 }
 
-// ServeHTTP satisifies the http.Handler interface.
+// ServeHTTP satisfies the http.Handler interface.
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := h.H(h.Server, w, r)
 	if err != nil {
@@ -64,40 +66,19 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func getIndex(s *Server, w http.ResponseWriter, r *http.Request) error {
-	var erogeList []model.Eroge
-	var pg int
-	var err error
-	var pn [5]int
-	index := true
-
-	if index {
-		pg = 0
-	} else {
-		vars := mux.Vars(r)
-		pg, err = strconv.Atoi(vars["page"])
-		if err != nil {
-			return StatusError{http.StatusInternalServerError, err}
-		}
-	}
-
-	err = s.DB.Eros.Select(&erogeList, pg*50)
+	var el []model.Eroge
+	pg, pn, err := paginate(r)
 	if err != nil {
-		return StatusError{http.StatusInternalServerError, err}
+		return err
+	}
+	err = s.DB.Eros.Select(&el, pg*50, 50)
+	if err != nil {
+		return err
 	}
 
 	// generate numbers for pagination
-	switch pg {
-	case 0, 1, 2, 3:
-		for i, _ := range pn {
-			pn[i] = i
-		}
-	default:
-		for i, j := int(pg)-2, 0; j < 5; i, j = i+1, j+1 {
-			pn[j] = i
-		}
-	}
 	p := &templates.IndexPage{
-		erogeList,
+		el,
 		pn,
 		int(pg),
 		int(pg) - 1,
@@ -143,18 +124,39 @@ func getEro(s *Server, w http.ResponseWriter, r *http.Request) error {
 
 	return nil
 }
-func getProfile(s *Server, w http.ResponseWriter, r *http.Request) error {
-	c, err := r.Cookie("id")
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return nil
-	}
-	u := &model.User{}
-	err = s.DB.Lookup.Get(u, c.Value)
+func getAdmin(s *Server, w http.ResponseWriter, r *http.Request) error {
+	u, err := authenticate(s, w, r)
 	if err != nil {
 		return err
 	}
-	w.Write([]byte("Hello " + u.Username))
+	p := &templates.AdminMainPage{u}
+	templates.WriteAdminPageTemplate(w, p)
+	return nil
+}
+func getAdminEdit(s *Server, w http.ResponseWriter, r *http.Request) error {
+	var el []model.Eroge
+	u, err := authenticate(s, w, r)
+	if err != nil {
+		return err
+	}
+	pg, pn, err := paginate(r)
+	if err != nil {
+		return err
+	}
+	err = s.DB.Eros.Select(&el, pg*25, 25)
+	if err != nil {
+		return err
+	}
+	// generate numbers for pagination
+	p := &templates.AdminEditPage{
+		u,
+		el,
+		pn,
+		int(pg),
+		int(pg) - 1,
+		int(pg) + 1,
+	}
+	templates.WriteAdminPageTemplate(w, p)
 	return nil
 }
 func getLogin(s *Server, w http.ResponseWriter, r *http.Request) error {
@@ -180,7 +182,7 @@ func postLogin(s *Server, w http.ResponseWriter, r *http.Request) error {
 	row := &model.User{}
 	err := s.DB.User.Get(row, user)
 	if err != nil {
-		return err
+		return StatusError{http.StatusForbidden, errors.New("user not found")}
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(row.Password), []byte(pass))
 	if err != nil {
@@ -204,7 +206,7 @@ func postLogin(s *Server, w http.ResponseWriter, r *http.Request) error {
 	}
 	http.SetCookie(w, cookie)
 	w.Write([]byte(`<html><body>you are now logged in.
-			go to your <a href="/">profile</a></body></html>`))
+			go to the <a href="/admin">admin panel</a></body></html>`))
 	return nil
 }
 func getSignup(s *Server, w http.ResponseWriter, r *http.Request) error {
@@ -212,9 +214,9 @@ func getSignup(s *Server, w http.ResponseWriter, r *http.Request) error {
 		<html><head><title>sekrit</title></head>
 		<body>
 		<form action="/auth/signup" method="post">
-			<input type="text" name="user" value="user" required><br />
-			<input type="password" name="pass" placeholder="pass" required><br />
-			<input type="password" name="conf" placeholder="pass" required><br />
+			<input type="text" name="user" placeholder="user" required>
+			<input type="password" name="pass" placeholder="pass" required>
+			<input type="password" name="conf" placeholder="confirmation" required>
 			<input type="submit" value="submit">
 		</form>
 		</body></html>`))

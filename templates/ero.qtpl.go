@@ -75,34 +75,53 @@ func (p *ErogePage) StreamContent(qw422016 *qt422016.Writer) {
 	qw422016.E().S(p.Ero.Filename)
 //line templates/ero.qtpl:18
 	qw422016.N().S(`</h1>
+	`)
+//line templates/ero.qtpl:19
+	for k, v := range p.Ero.Meta {
+//line templates/ero.qtpl:19
+		qw422016.N().S(`
+		<li>`)
+//line templates/ero.qtpl:20
+		qw422016.E().S(k)
+//line templates/ero.qtpl:20
+		qw422016.N().S(` => `)
+//line templates/ero.qtpl:20
+		qw422016.E().V(v)
+//line templates/ero.qtpl:20
+		qw422016.N().S(`</li>
+	`)
+//line templates/ero.qtpl:21
+	}
+//line templates/ero.qtpl:21
+	qw422016.N().S(`
 </article>
 
 `)
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 }
 
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 func (p *ErogePage) WriteContent(qq422016 qtio422016.Writer) {
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 	p.StreamContent(qw422016)
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 	qt422016.ReleaseWriter(qw422016)
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 }
 
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 func (p *ErogePage) Content() string {
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 	p.WriteContent(qb422016)
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 	qs422016 := string(qb422016.B)
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 	return qs422016
-//line templates/ero.qtpl:21
+//line templates/ero.qtpl:24
 }

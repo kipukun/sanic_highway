@@ -1,0 +1,86 @@
+{% import "fmt" %}
+{% import "strings" %}
+{% import "github.com/kipukun/sanic_highway/model" %}
+
+{% code 
+type AdminEditPage struct {
+	User *model.User
+	EroList []model.Eroge	
+	Pagination []int
+	Current, Prev, Next int
+}
+%}
+
+{% func (p *AdminEditPage) Title() %}
+<title>highway maintenance</title>
+{% endfunc %}
+
+
+{% func (p *AdminEditPage) Content() %}
+<marquee><h1>editing</h1></marquee>
+<table>
+<tr>
+	<th>Title</th>
+	<th>
+		MetaIDs 
+		<button onclick=both("vndb")>Fill VNDB</button>
+		<button onclick=both("dlsite")>Fill DLsite</button>
+	</th>
+</tr>
+{% for _, ero := range p.EroList %}
+<tr>
+	<td>
+		{%s ero.Filename %}
+		<input type="button" value="Copy" />
+	</td>
+	<td>
+		{% for t, d := range ero.Meta %}
+			<span><b>{%s t %}:</b> {%s fmt.Sprintf(strings.Join(d, ", ")) %}</span>
+		{% endfor %}
+		<form action="/api/edit/{%d ero.ID %}" method="POST">
+			<input type="hidden" name="page" value="{%d p.Current %}">
+			<select name="group">
+				{% for t, _ := range ero.Meta %}
+				<option value="{%s t %}">{%s t %}</option>
+				{% endfor %}
+				<option value="new">create new</option>
+			</select>
+			<input name="new-group" type="text" placeholder="new id group">
+			<input name="id" type="text" placeholder="id" required>
+			<input name="op" type="submit" value="+">
+			<input name="op" type="submit" value="-">
+		</form>
+	</td>
+</tr>
+{% endfor %}
+</table>
+<center>
+	<div class="pg">
+		<a href="/admin/edit/page/{%d p.Prev %}">&ltrif;</a>
+		{% for _, pg := range p.Pagination  %}
+			<a href="/admin/edit/page/{%d pg %}" {% if pg == p.Current %} class="current" {% endif %}>{%d pg %}</a>
+		{%  endfor  %}
+		<a href="/admin/edit/page/{%d p.Next %}">&rtrif;</a>
+</center>
+
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+	if (typeof(Storage) !== "undefined") {
+		fill()	
+	} else {
+		console.log("no localStorage support, for some reason.")
+	}
+}, false);
+function fill() {
+	f = localStorage.getItem("fill")
+	if (f !== null) {
+		groups = document.querySelectorAll('[name="new-group"]')
+		for (let el of groups) {el.value = f} 
+	}
+}
+function both(f) {
+	localStorage.setItem("fill", f)
+	fill()
+}
+</script>
+{% endfunc %}

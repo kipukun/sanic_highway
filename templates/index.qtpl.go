@@ -23,7 +23,7 @@ var (
 //line templates/index.qtpl:4
 type IndexPage struct {
 	EroList             []model.Eroge
-	Pagination          [5]int
+	Pagination          []int
 	Current, Prev, Next int
 }
 
@@ -69,121 +69,135 @@ func (p *IndexPage) StreamContent(qw422016 *qt422016.Writer) {
 <table>
 	<tr>
 		<th>Title</th>
-		<th>VNDB</th>
-		<th>DLsite</th>
+		<th>MetaIDs</th>
 	</tr>
 	`)
-//line templates/index.qtpl:23
+//line templates/index.qtpl:22
 	for _, ero := range p.EroList {
-//line templates/index.qtpl:23
+//line templates/index.qtpl:22
 		qw422016.N().S(`
 	<tr>
 		<td>
 			<a href="/ero/`)
-//line templates/index.qtpl:26
+//line templates/index.qtpl:25
 		qw422016.N().D(ero.ID)
-//line templates/index.qtpl:26
+//line templates/index.qtpl:25
 		qw422016.N().S(`">`)
-//line templates/index.qtpl:26
+//line templates/index.qtpl:25
 		qw422016.E().S(ero.Filename)
-//line templates/index.qtpl:26
+//line templates/index.qtpl:25
 		qw422016.N().S(`</a>
-			<button style="float: right;">Copy</button>
 		</td>
 		<td>
-			<a href="/ero/`)
+			<table>
+				<tr>
+				`)
 //line templates/index.qtpl:30
-		qw422016.N().D(ero.ID)
+		for t, _ := range ero.Meta {
 //line templates/index.qtpl:30
-		qw422016.N().S(`">`)
-//line templates/index.qtpl:30
-		qw422016.E().V(ero.VNDB)
-//line templates/index.qtpl:30
-		qw422016.N().S(`</a> <br />
-			<input type="text" /> <span>+ // - </span>
+			qw422016.N().S(`
+					<th> `)
+//line templates/index.qtpl:31
+			qw422016.E().S(t)
+//line templates/index.qtpl:31
+			qw422016.N().S(` </th>
+				`)
+//line templates/index.qtpl:32
+		}
+//line templates/index.qtpl:32
+		qw422016.N().S(`
+				</tr>
+				<tr>
+			`)
+//line templates/index.qtpl:35
+		for _, d := range ero.Meta {
+//line templates/index.qtpl:35
+			qw422016.N().S(`
+				<td> `)
+//line templates/index.qtpl:36
+			qw422016.E().V(d)
+//line templates/index.qtpl:36
+			qw422016.N().S(` </td>
+			`)
+//line templates/index.qtpl:37
+		}
+//line templates/index.qtpl:37
+		qw422016.N().S(`
+			</table>
 		</td>
-		<td><a href="/ero/`)
-//line templates/index.qtpl:33
-		qw422016.N().D(ero.ID)
-//line templates/index.qtpl:33
-		qw422016.N().S(`">`)
-//line templates/index.qtpl:33
-		qw422016.E().V(ero.DLsite)
-//line templates/index.qtpl:33
-		qw422016.N().S(`</a></td>
 	</tr>
 	`)
-//line templates/index.qtpl:35
+//line templates/index.qtpl:41
 	}
-//line templates/index.qtpl:35
+//line templates/index.qtpl:41
 	qw422016.N().S(`
 </table>
 <center>
 	<div class="pg">
 		<a href="/page/`)
-//line templates/index.qtpl:39
+//line templates/index.qtpl:45
 	qw422016.N().D(p.Prev)
-//line templates/index.qtpl:39
+//line templates/index.qtpl:45
 	qw422016.N().S(`">◀</a>
 		`)
-//line templates/index.qtpl:40
+//line templates/index.qtpl:46
 	for _, pg := range p.Pagination {
-//line templates/index.qtpl:40
+//line templates/index.qtpl:46
 		qw422016.N().S(`
 			<a href="/page/`)
-//line templates/index.qtpl:41
+//line templates/index.qtpl:47
 		qw422016.N().D(pg)
-//line templates/index.qtpl:41
+//line templates/index.qtpl:47
 		qw422016.N().S(`" `)
-//line templates/index.qtpl:41
+//line templates/index.qtpl:47
 		if pg == p.Current {
-//line templates/index.qtpl:41
+//line templates/index.qtpl:47
 			qw422016.N().S(` class="current" `)
-//line templates/index.qtpl:41
+//line templates/index.qtpl:47
 		}
-//line templates/index.qtpl:41
+//line templates/index.qtpl:47
 		qw422016.N().S(`>`)
-//line templates/index.qtpl:41
+//line templates/index.qtpl:47
 		qw422016.N().D(pg)
-//line templates/index.qtpl:41
+//line templates/index.qtpl:47
 		qw422016.N().S(`</a>
 		`)
-//line templates/index.qtpl:42
+//line templates/index.qtpl:48
 	}
-//line templates/index.qtpl:42
+//line templates/index.qtpl:48
 	qw422016.N().S(`
 		<a href="/page/`)
-//line templates/index.qtpl:43
+//line templates/index.qtpl:49
 	qw422016.N().D(p.Next)
-//line templates/index.qtpl:43
+//line templates/index.qtpl:49
 	qw422016.N().S(`">▶</a>
 </center>
 `)
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 }
 
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 func (p *IndexPage) WriteContent(qq422016 qtio422016.Writer) {
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 	p.StreamContent(qw422016)
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 	qt422016.ReleaseWriter(qw422016)
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 }
 
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 func (p *IndexPage) Content() string {
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 	p.WriteContent(qb422016)
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 	qs422016 := string(qb422016.B)
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 	return qs422016
-//line templates/index.qtpl:45
+//line templates/index.qtpl:51
 }

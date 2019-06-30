@@ -2,58 +2,76 @@ package http
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 	"os/signal"
+
+	"time"
+
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/kipukun/sanic_highway/db"
 )
 
-// Server holds the DB connection, and configured routes for the http package.
+// Server holds the DB connection, and configured router for the http package.
 type Server struct {
 	DB     *db.Database
-	routes *mux.Router
+	router *mux.Router
+	HS     *http.Server
 }
 
 // Init takes in a Database and returns a new Server intialized with the
 // default mux.Router and the database connection.
 func Init(d *db.Database) *Server {
 	r := mux.NewRouter()
+	h := &http.Server{
+		Handler:      r,
+		Addr:         ":1337",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
 	srv := &Server{
 		DB:     d,
-		routes: r,
+		router: r,
+		HS:     h,
 	}
 	return srv
 }
 
-// Start sets up routes on the mux and starts the HTTP server.
+// Start sets up router on the mux and starts the HTTP server.
 func (s *Server) Start() {
-	s.routes.Handle("/", Handler{s, getIndex})
-	s.routes.Handle("/about", Handler{s, getAbout})
-	s.routes.Handle("/page/{page}", Handler{s, getIndex})
+	// basic routes
+	s.router.Handle("/", Handler{s, getIndex})
+	s.router.Handle("/about", Handler{s, getAbout})
+	s.router.Handle("/page/{page}", Handler{s, getIndex})
 	ass := http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/")))
-	s.routes.PathPrefix("/assets/").Handler(ass)
-	s.routes.Handle("/ero/{id}", Handler{s, getEro})
-	s.routes.Handle("/profile", Handler{s, getProfile})
-	s.routes.Handle("/login", Handler{s, getLogin})
-	s.routes.Handle("/auth/login", Handler{s, postLogin}).Methods("POST")
-	s.routes.Handle("/signup", Handler{s, getSignup})
-	s.routes.Handle("/auth/signup", Handler{s, postSignup}).Methods("POST")
+	s.router.PathPrefix("/assets/").Handler(ass)
+	s.router.Handle("/ero/{id}", Handler{s, getEro})
+	// admin routes
+	s.router.Handle("/admin", Handler{s, getAdmin})
+	s.router.Handle("/admin/edit", Handler{s, getAdminEdit})
+	s.router.Handle("/admin/edit/page/{page}", Handler{s, getAdminEdit})
+	// auth routes
+	s.router.Handle("/login", Handler{s, getLogin})
+	s.router.Handle("/auth/login", Handler{s, postLogin}).Methods("POST")
 
-	s.routes.NotFoundHandler = Handler{s, getStop}
+	// api routes
+	s.router.Handle("/api/edit/{id}", Handler{s, postEdit}).Methods("POST")
 
-	// handle sigint
+	s.router.NotFoundHandler = Handler{s, getStop}
+
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)
 
 	go func() {
 		select {
 		case sig := <-c:
-			fmt.Printf("\n[*] got %s signal. aborting...\n", sig)
-			os.Exit(0)
+			fmt.Printf("\n[*] got %s signal. shutting down...\n", sig)
+			s.HS.Close()
 		}
 	}()
-	log.Fatal(http.ListenAndServe(":1337", s.routes))
+	err := s.HS.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		fmt.Println("could not close gracefully")
+	}
 }

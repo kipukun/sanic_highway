@@ -3,7 +3,7 @@
 {% code 
 type IndexPage struct {
 	EroList []model.Eroge	
-	Pagination [5]int
+	Pagination []int
 	Current, Prev, Next int
 }
 %}
@@ -17,20 +17,26 @@ type IndexPage struct {
 <table>
 	<tr>
 		<th>Title</th>
-		<th>VNDB</th>
-		<th>DLsite</th>
+		<th>MetaIDs</th>
 	</tr>
 	{% for _, ero := range p.EroList %}
 	<tr>
 		<td>
 			<a href="/ero/{%d ero.ID %}">{%s ero.Filename %}</a>
-			<button style="float: right;">Copy</button>
 		</td>
 		<td>
-			<a href="/ero/{%d ero.ID %}">{%v ero.VNDB %}</a> <br />
-			<input type="text" /> <span>+ // - </span>
+			<table>
+				<tr>
+				{% for t, _ := range ero.Meta %}
+					<th> {%s t %} </th>
+				{% endfor %}
+				</tr>
+				<tr>
+			{% for _, d := range ero.Meta %}
+				<td> {%v d %} </td>
+			{% endfor %}
+			</table>
 		</td>
-		<td><a href="/ero/{%d ero.ID %}">{%v ero.DLsite %}</a></td>
 	</tr>
 	{%  endfor  %}
 </table>

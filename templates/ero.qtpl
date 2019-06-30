@@ -16,6 +16,9 @@ type ErogePage struct {
 
 <article>
 	<h1>{%s  p.Ero.Filename  %}</h1>
+	{% for k, v := range p.Ero.Meta %}
+		<li>{%s k %} => {%v v %}</li>
+	{% endfor %}
 </article>
 
 {% endfunc %} 
