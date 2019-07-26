@@ -15,7 +15,10 @@ import (
 )
 
 func postEdit(s *Server, w http.ResponseWriter, r *http.Request) error {
-	var err error
+	_, err := authenticate(s, w, r)
+	if err != nil {
+		return nil
+	}
 	r.ParseForm()
 	vars := mux.Vars(r)
 	redir := fmt.Sprintf("/admin/edit/page/%s", r.PostFormValue("page"))
@@ -67,6 +70,10 @@ func postEdit(s *Server, w http.ResponseWriter, r *http.Request) error {
 }
 
 func postIngest(s *Server, w http.ResponseWriter, r *http.Request) error {
+	_, err := authenticate(s, w, r)
+	if err != nil {
+		return nil
+	}
 	var buf bytes.Buffer
 	f, _, err := r.FormFile("file")
 	if err != nil {
@@ -86,10 +93,14 @@ func postIngest(s *Server, w http.ResponseWriter, r *http.Request) error {
 }
 
 func postExport(s *Server, w http.ResponseWriter, r *http.Request) error {
+	_, err := authenticate(s, w, r)
+	if err != nil {
+		return nil
+	}
 	var buf bytes.Buffer
 	z := gzip.NewWriter(&buf)
 	var ero []model.Eroge
-	err := s.DB.All.Select(&ero)
+	err = s.DB.All.Select(&ero)
 	if err != nil {
 		return err
 	}
