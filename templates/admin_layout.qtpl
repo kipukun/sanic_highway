@@ -1,0 +1,32 @@
+{% interface 
+AdminPage {
+	Title()
+	Content()
+}
+%}
+
+{% func AdminPageTemplate(p AdminPage) %}
+<!DOCTYPE html>
+<html>
+	<head>
+		{%= p.Title() %}
+		<link rel="stylesheet" href="/assets/style.css">
+	</head>
+	<body>
+		<header>
+			<a src="/" id="logo">
+				Sanic Information Highway 
+				<b>Maintenance & Administration</b>
+			</a>
+			<nav>
+				<ul>
+					<li><a href="/admin">Home</a></li>
+					<li><a href="/admin/edit">Editing</a></li>
+				</ul>
+			</nav>
+		</header>
+	
+		{%= p.Content() %}
+	</body>
+</html>
+{% endfunc %}

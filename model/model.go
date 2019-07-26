@@ -1,25 +1,40 @@
 package model
 
-import "github.com/lib/pq"
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+	"fmt"
+)
 
-type Eroge struct {
-	ID         int            `db:"id"`
-	Title      string         `db:"title"`
-	Date       string         `db:"date"`
-	Images     pq.StringArray `db:"images"`
-	CircleName string         `db:"circle_name"`
-	DLsiteIDs  pq.StringArray `db:"dlsite_ids"`
-	VNDBIDs    pq.StringArray `db:"vndb_ids"`
-	MiscIDs    pq.StringArray `db:"misc_ids"`
-	OnXDCC     bool           `db:"on_xdcc"`
-	OnHDD      bool           `db:"on_hdd"`
-	InTorrent  bool           `db:"in_torrent"`
-	Scraped    bool           `db:"scraped"`
-	Circle     `db:"circle"`
+type metaids map[string][]string
+
+func (m metaids) Value() (driver.Value, error) {
+	return json.Marshal(m)
 }
 
-type Circle struct {
-	ID      int    `db:"id"`
-	Name    string `db:"name"`
-	Website string `db:"website"`
+func (m *metaids) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
+	}
+	return json.Unmarshal(b, &m)
+}
+
+// Eroge represents a row in the `eroge` table and a singular file.
+type Eroge struct {
+	ID       int     `db:"id"`
+	Filename string  `db:"fname"`
+	Meta     metaids `db:"metaids"`
+}
+
+// User represents a row in the `users` table and a singular user.
+type User struct {
+	ID       string `db:"id"`
+	Username string `db:"username"`
+	Password string `db:"password"`
+}
+
+func (u User) String() string {
+	return fmt.Sprintf("user %s", u.Username)
 }

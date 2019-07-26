@@ -1,0 +1,104 @@
+{% import "fmt" %}
+{% import "strings" %}
+{% import "github.com/kipukun/sanic_highway/model" %}
+
+{% code 
+type AdminEditPage struct {
+	User *model.User
+	EroList []model.Eroge	
+	Pagination []int
+	Current, Prev, Next int
+}
+%}
+
+{% func (p *AdminEditPage) Title() %}
+<title>highway maintenance</title>
+{% endfunc %}
+
+
+{% func (p *AdminEditPage) Content() %}
+<h1>editing</h1>
+<details>
+	<summary>press this for halp</summary>
+	<p>the dropdown is for the group you currently want to act on</p>
+	<p>the second field is for the name of the new group (if applicable)</p>
+	<p>third is for adding an id to the group selected in the dropdown</p>
+	<p><strong>the + button</strong>
+		will push the given id to the group (and make a new group)</p>
+	<p><strong>the - button</strong> will remove the LAST id from the group</p>
+	<p><strong>the delete button</strong> will delete the group in its entirety</p>
+	<p><strong>import</strong> will import more eroge! simply ignores duplicates</p>
+</details>
+<table>
+<tr>
+	<th>Title</th>
+	<th>
+		MetaIDs 
+		<button onclick=both("vndb")>Fill VNDB</button>
+		<button onclick=both("dlsite")>Fill DLsite</button>
+	</th>
+</tr>
+{% for _, ero := range p.EroList %}
+<tr>
+	<td>
+		{%s ero.Filename %}
+		<button type="button" value="{%s ero.Filename %}" onclick=search(this)>
+			Search
+		</button>
+	</td>
+	<td>
+		{% for t, d := range ero.Meta %}
+			<span><b>{%s t %}:</b> {%s fmt.Sprintf(strings.Join(d, ", ")) %}</span>
+		{% endfor %}
+		<form action="/api/edit/{%d ero.ID %}" method="POST">
+			<input type="hidden" name="page" value="{%d p.Current %}">
+			<select name="group">
+				{% for t, _ := range ero.Meta %}
+				<option value="{%s t %}">{%s t %}</option>
+				{% endfor %}
+				<option value="new">create new</option>
+			</select>
+			<input name="new-group" type="text" placeholder="new id group">
+			<input name="id" type="text" placeholder="id">
+			<input name="op" type="submit" value="+">
+			<input name="op" type="submit" value="-">
+			<input name="op" type="submit" value="delete">
+		</form>
+	</td>
+</tr>
+{% endfor %}
+</table>
+<center>
+	<div class="pg">
+		<a href="/admin/edit/page/{%d p.Prev %}">&ltrif;</a>
+		{% for _, pg := range p.Pagination  %}
+			<a href="/admin/edit/page/{%d pg %}" {% if pg == p.Current %} class="current" {% endif %}>{%d pg %}</a>
+		{%  endfor  %}
+		<a href="/admin/edit/page/{%d p.Next %}">&rtrif;</a>
+</center>
+
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+	if (typeof(Storage) !== "undefined") {
+		fill()	
+	} else {
+		console.log("no localStorage support, for some reason.")
+	}
+}, false);
+function fill() {
+	f = localStorage.getItem("fill")
+	if (f !== null) {
+		groups = document.querySelectorAll('[name="new-group"]')
+		for (let el of groups) {el.value = f} 
+	}
+}
+function both(f) {
+	localStorage.setItem("fill", f)
+	fill()
+}
+function search(e) {
+	var win = window.open("https://google.com/search?q="+e.value, '_blank');
+	win.focus();
+}
+</script>
+{% endfunc %}

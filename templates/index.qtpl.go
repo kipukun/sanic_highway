@@ -23,7 +23,7 @@ var (
 //line templates/index.qtpl:4
 type IndexPage struct {
 	EroList             []model.Eroge
-	Pagination          [5]int
+	Pagination          []int
 	Current, Prev, Next int
 }
 
@@ -68,185 +68,136 @@ func (p *IndexPage) StreamContent(qw422016 *qt422016.Writer) {
 	qw422016.N().S(`
 <table>
 	<tr>
-		<th>Circle</th>
 		<th>Title</th>
-		<th>DLsite</th>
-		<th>VNDB</th>
-		<th>Misc.</th>
-		<th>Date</th>
-		<th>XDCC</th>
-		<th>HDD</th>
-		<th>Torrent</th>
+		<th>MetaIDs</th>
 	</tr>
 	`)
-//line templates/index.qtpl:29
+//line templates/index.qtpl:22
 	for _, ero := range p.EroList {
-//line templates/index.qtpl:29
+//line templates/index.qtpl:22
 		qw422016.N().S(`
 	<tr>
-		<td><a href="/circle/`)
-//line templates/index.qtpl:31
-		qw422016.N().D(ero.Circle.ID)
-//line templates/index.qtpl:31
-		qw422016.N().S(`">`)
-//line templates/index.qtpl:31
-		qw422016.E().S(ero.CircleName)
-//line templates/index.qtpl:31
-		qw422016.N().S(`</a></td>
-		<td><a href="/ero/`)
-//line templates/index.qtpl:32
+		<td>
+			<a href="/ero/`)
+//line templates/index.qtpl:25
 		qw422016.N().D(ero.ID)
-//line templates/index.qtpl:32
+//line templates/index.qtpl:25
 		qw422016.N().S(`">`)
+//line templates/index.qtpl:25
+		qw422016.E().S(ero.Filename)
+//line templates/index.qtpl:25
+		qw422016.N().S(`</a>
+		</td>
+		<td>
+			<table>
+				<tr>
+				`)
+//line templates/index.qtpl:30
+		for t, _ := range ero.Meta {
+//line templates/index.qtpl:30
+			qw422016.N().S(`
+					<th> `)
+//line templates/index.qtpl:31
+			qw422016.E().S(t)
+//line templates/index.qtpl:31
+			qw422016.N().S(` </th>
+				`)
 //line templates/index.qtpl:32
-		qw422016.E().S(ero.Title)
+		}
 //line templates/index.qtpl:32
-		qw422016.N().S(`</a></td>
-		<td>
+		qw422016.N().S(`
+				</tr>
+				<tr>
 			`)
-//line templates/index.qtpl:34
-		for _, id := range ero.DLsiteIDs {
-//line templates/index.qtpl:34
-			qw422016.N().S(`
-				<p>`)
 //line templates/index.qtpl:35
-			qw422016.E().S(id)
+		for _, d := range ero.Meta {
 //line templates/index.qtpl:35
-			qw422016.N().S(`</p>
-			`)
-//line templates/index.qtpl:36
-		}
-//line templates/index.qtpl:36
-		qw422016.N().S(`
-		</td>
-		<td>
-			`)
-//line templates/index.qtpl:39
-		for _, id := range ero.VNDBIDs {
-//line templates/index.qtpl:39
 			qw422016.N().S(`
-				<p>`)
-//line templates/index.qtpl:40
-			qw422016.E().S(id)
-//line templates/index.qtpl:40
-			qw422016.N().S(`</p>
+				<td> `)
+//line templates/index.qtpl:36
+			qw422016.E().V(d)
+//line templates/index.qtpl:36
+			qw422016.N().S(` </td>
 			`)
-//line templates/index.qtpl:41
+//line templates/index.qtpl:37
 		}
-//line templates/index.qtpl:41
+//line templates/index.qtpl:37
 		qw422016.N().S(`
+			</table>
 		</td>
-		<td>
-			`)
-//line templates/index.qtpl:44
-		for _, id := range ero.MiscIDs {
-//line templates/index.qtpl:44
-			qw422016.N().S(`
-				<p>`)
-//line templates/index.qtpl:45
-			qw422016.E().S(id)
-//line templates/index.qtpl:45
-			qw422016.N().S(`</p>
-			`)
-//line templates/index.qtpl:46
-		}
-//line templates/index.qtpl:46
-		qw422016.N().S(`
-		</td>
-
-		<td>`)
-//line templates/index.qtpl:49
-		qw422016.E().S(ero.Date)
-//line templates/index.qtpl:49
-		qw422016.N().S(`</td>
-		<td>`)
-//line templates/index.qtpl:50
-		qw422016.E().V(ero.OnXDCC)
-//line templates/index.qtpl:50
-		qw422016.N().S(`</td>
-		<td>`)
-//line templates/index.qtpl:51
-		qw422016.E().V(ero.OnHDD)
-//line templates/index.qtpl:51
-		qw422016.N().S(`</td>
-		<td>`)
-//line templates/index.qtpl:52
-		qw422016.E().V(ero.InTorrent)
-//line templates/index.qtpl:52
-		qw422016.N().S(`</td>
 	</tr>
 	`)
-//line templates/index.qtpl:54
+//line templates/index.qtpl:41
 	}
-//line templates/index.qtpl:54
+//line templates/index.qtpl:41
 	qw422016.N().S(`
 </table>
 <center>
 	<div class="pg">
 		<a href="/page/`)
-//line templates/index.qtpl:58
+//line templates/index.qtpl:45
 	qw422016.N().D(p.Prev)
-//line templates/index.qtpl:58
+//line templates/index.qtpl:45
 	qw422016.N().S(`">◀</a>
 		`)
-//line templates/index.qtpl:59
+//line templates/index.qtpl:46
 	for _, pg := range p.Pagination {
-//line templates/index.qtpl:59
+//line templates/index.qtpl:46
 		qw422016.N().S(`
 			<a href="/page/`)
-//line templates/index.qtpl:60
+//line templates/index.qtpl:47
 		qw422016.N().D(pg)
-//line templates/index.qtpl:60
+//line templates/index.qtpl:47
 		qw422016.N().S(`" `)
-//line templates/index.qtpl:60
+//line templates/index.qtpl:47
 		if pg == p.Current {
-//line templates/index.qtpl:60
+//line templates/index.qtpl:47
 			qw422016.N().S(` class="current" `)
-//line templates/index.qtpl:60
+//line templates/index.qtpl:47
 		}
-//line templates/index.qtpl:60
+//line templates/index.qtpl:47
 		qw422016.N().S(`>`)
-//line templates/index.qtpl:60
+//line templates/index.qtpl:47
 		qw422016.N().D(pg)
-//line templates/index.qtpl:60
+//line templates/index.qtpl:47
 		qw422016.N().S(`</a>
 		`)
-//line templates/index.qtpl:61
+//line templates/index.qtpl:48
 	}
-//line templates/index.qtpl:61
+//line templates/index.qtpl:48
 	qw422016.N().S(`
 		<a href="/page/`)
-//line templates/index.qtpl:62
+//line templates/index.qtpl:49
 	qw422016.N().D(p.Next)
-//line templates/index.qtpl:62
+//line templates/index.qtpl:49
 	qw422016.N().S(`">▶</a>
 </center>
 `)
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 }
 
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 func (p *IndexPage) WriteContent(qq422016 qtio422016.Writer) {
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 	p.StreamContent(qw422016)
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 	qt422016.ReleaseWriter(qw422016)
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 }
 
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 func (p *IndexPage) Content() string {
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 	p.WriteContent(qb422016)
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 	qs422016 := string(qb422016.B)
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 	return qs422016
-//line templates/index.qtpl:64
+//line templates/index.qtpl:51
 }

@@ -3,24 +3,42 @@ package db
 import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 )
 
 // Database holds the connection to the DB
 // as well as prepared statements on that connection.
 type Database struct {
-	Conn *sqlx.DB
-
-	GetAnEro         *sqlx.Stmt
-	GetSomeEro       *sqlx.Stmt
-	GetEroTags       *sqlx.Stmt
-	GetACircle       *sqlx.Stmt
-	GetCircleEro     *sqlx.Stmt
-	IngestEro        *sqlx.NamedStmt
-	UpdateCircles    *sqlx.Stmt
-	GetUnscrapedEro  *sqlx.Stmt
-	UpdateScrapedEro *sqlx.Stmt
+	Conn                                                 *sqlx.DB
+	All, Ero, Eros, IngestEro, InsertUser, CreateSession *sqlx.Stmt
+	CreateMeta, RemoveMeta, UpdateMeta, DeleteMeta       *sqlx.Stmt
+	User, Lookup                                         *sqlx.Stmt
 }
 
+type errExecer struct {
+	c   *sqlx.DB
+	err error
+}
+
+func (ee *errExecer) exec(stmt string) {
+	if ee.err != nil {
+		return
+	}
+	_, err := ee.c.Exec(stmt)
+	ee.err = errors.Wrap(err, stmt)
+}
+
+func (ee *errExecer) prepare(prep **sqlx.Stmt, query string) {
+	var err error
+	if ee.err != nil {
+		return
+	}
+	*prep, err = ee.c.Preparex(query)
+	ee.err = errors.Wrap(err, query)
+}
+
+// Init takes in a DB configuration string and returns a Database connection
+// and nil, or nil and the error reported by prep functions otherwise.
 func Init(config string) (*Database, error) {
 	conn, err := sqlx.Open("postgres", config)
 	if err != nil {
@@ -30,7 +48,7 @@ func Init(config string) (*Database, error) {
 	if err := d.Conn.Ping(); err != nil {
 		return nil, err
 	}
-	if err := d.createTables(); err != nil {
+	if err := d.create(); err != nil {
 		return nil, err
 	}
 	if err := d.prepare(); err != nil {
@@ -39,155 +57,59 @@ func Init(config string) (*Database, error) {
 	return d, nil
 }
 
-func (d *Database) createTables() error {
-	createEro := `
-		CREATE TABLE IF NOT EXISTS eroge (
-		    id SERIAL PRIMARY KEY,
-		    title text NOT NULL,
-		    circle_name text,
-		    dlsite_ids text[],
-		    vndb_ids text[],
-		    misc_ids text[],
-		    date text DEFAULT '11/2/1971'::text NOT NULL,
-		    on_xdcc boolean DEFAULT false NOT NULL,
-		    on_hdd boolean DEFAULT false NOT NULL,
-		    in_torrent boolean DEFAULT false NOT NULL,
-		    images text[] DEFAULT '{https://via.placeholder.com/400x400.png?text=cum,https://via.placeholder.com/400x400.png?text=cum,https://via.placeholder.com/400x400.png?text=cum}'::text[] NOT NULL,
-		    scraped boolean DEFAULT false NOT NULL
-		);
-	`
-	rows, err := d.Conn.Query(createEro)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-	updateErogeKey := `
-		ALTER SEQUENCE eroge_id_seq RESTART WITH 1000;	
-	`
-	rows, err = d.Conn.Query(updateErogeKey)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-	createCircles := `
-		CREATE TABLE IF NOT EXISTS circles (
-		id SERIAL NOT NULL PRIMARY KEY,
-		name TEXT NOT NULL UNIQUE,
-		website TEXT NOT NULL DEFAULT 'https://crouton.net'
-		);
-	`
-	rows, err = d.Conn.Query(createCircles)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-	createSeries := `
-		CREATE TABLE IF NOT EXISTS series (
-		id SERIAL NOT NULL PRIMARY KEY,
-		name TEXT NOT NULL
-		);
-	`
-	rows, err = d.Conn.Query(createSeries)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-	createTags := `
-		CREATE TABLE IF NOT EXISTS tags (
-		id SERIAL NOT NULL PRIMARY KEY,
-		name TEXT NOT NULL
-		);
-	`
-	rows, err = d.Conn.Query(createTags)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-	createEroTags := `
-		CREATE TABLE IF NOT EXISTS ero_tags (
-		ero_id INT NOT NULL,
-		tag_name TEXT NOT NULL 
-		);
-	`
-	rows, err = d.Conn.Query(createEroTags)
-	if err != nil {
-		return err
-	}
-	rows.Close()
-	rows, err = d.Conn.Query(createTags)
-	if err != nil {
-		return err
-	}
-	rows.Close()
+func (d *Database) create() error {
+	ee := &errExecer{c: d.Conn}
+	ee.exec(`CREATE TABLE IF NOT EXISTS eroge (
+			id SERIAL PRIMARY KEY,
+			fname text NOT NULL UNIQUE, 
+			metaids jsonb DEFAULT '{}'::jsonb);`)
 
+	ee.exec("ALTER SEQUENCE eroge_id_seq RESTART WITH 1000;")
+
+	ee.exec(`CREATE TABLE IF NOT EXISTS users (
+			id uuid NOT NULL PRIMARY KEY,
+			username text UNIQUE NOT NULL,
+			password text NOT NULL );`)
+
+	ee.exec(`CREATE TABLE IF NOT EXISTS sessions (
+			id uuid NOT NULL,
+			user_id uuid UNIQUE NOT NULL REFERENCES users(id) );`)
+
+	if ee.err != nil {
+		return ee.err
+	}
 	return nil
 }
 
 func (d *Database) prepare() error {
-	var err error
-	d.GetSomeEro, err = d.Conn.Preparex(
-		`SELECT eroge.*,
-			circles.id AS "circle.id"
-		FROM eroge 
-		INNER JOIN circles 
-		ON eroge.circle_name=circles.name
-		OFFSET $1
-		LIMIT 50;`)
-	if err != nil {
-		return err
+	ee := &errExecer{c: d.Conn}
+	ee.prepare(&d.All, "SELECT * FROM eroge ORDER BY id ASC;")
+	ee.prepare(&d.Eros, "SELECT * FROM eroge ORDER BY id ASC OFFSET $1 LIMIT $2;")
+	ee.prepare(&d.Ero, `SELECT * FROM eroge WHERE id = $1`)
+	ee.prepare(&d.IngestEro, `INSERT INTO eroge (fname) VALUES ($1)
+		ON CONFLICT ON CONSTRAINT eroge_fname_key DO NOTHING;`)
+	ee.prepare(&d.InsertUser, `INSERT INTO users (id, username, password) VALUES
+				($1, $2, $3);`)
+	ee.prepare(&d.CreateSession, `INSERT INTO sessions (id, user_id) 
+				VALUES ($1, $2)
+				ON CONFLICT ON CONSTRAINT sessions_user_id_key
+				DO UPDATE SET id = $1;`)
+	ee.prepare(&d.CreateMeta, `UPDATE eroge SET metaids =
+	metaids || jsonb_build_object($1::text, $2::jsonb) WHERE id = $3;`)
+	ee.prepare(&d.RemoveMeta, `UPDATE eroge SET metaids =
+			jsonb_set(metaids, $1::text[], (metaids->$2::text) - -1)
+			WHERE id = $3;`)
+	ee.prepare(&d.UpdateMeta, `UPDATE eroge SET metaids =
+	jsonb_insert(metaids, $1::text[], $2::jsonb, true) WHERE id = $3;`)
+	ee.prepare(&d.DeleteMeta, `UPDATE eroge SET metaids = metaids - $1::text
+			WHERE id = $2;`)
+	ee.prepare(&d.User, `SELECT * FROM users WHERE username = $1 LIMIT 1;`)
+	ee.prepare(&d.Lookup, `SELECT users.* FROM users
+			INNER JOIN sessions 
+			ON sessions.user_id = users.id
+			AND sessions.id = $1;`)
+	if ee.err != nil {
+		return ee.err
 	}
-	d.GetAnEro, err = d.Conn.Preparex("SELECT * FROM eroge WHERE id=$1;")
-	if err != nil {
-		return err
-	}
-	d.GetEroTags, err = d.Conn.Preparex(
-		`SELECT tag_name FROM eroge 
-		INNER JOIN ero_tags ON 
-		ero_tags.ero_id = eroge.id 
-		WHERE eroge.id=$1`)
-	if err != nil {
-		return err
-	}
-	d.GetACircle, err = d.Conn.Preparex("SELECT * FROM circles WHERE id=$1;")
-	if err != nil {
-		return err
-	}
-	d.GetCircleEro, err = d.Conn.Preparex(
-		`SELECT eroge.* FROM eroge 
-		INNER JOIN circles 
-		ON eroge.circle_name=circles.name 
-		WHERE circles.id=$1;`)
-	if err != nil {
-		return err
-	}
-	d.IngestEro, err = d.Conn.PrepareNamed(
-		`INSERT INTO eroge 
-		(title, circle_name, dlsite_ids, vndb_ids, on_xdcc, on_hdd, in_torrent)
-		VALUES 
-		(:name, :circle, :dlsiteids, :vndbids, :xdcc, :hdd, :torrent);`)
-	if err != nil {
-		return err
-	}
-	d.UpdateCircles, err = d.Conn.Preparex(
-		`INSERT INTO circles (name) VALUES ($1)
-		ON CONFLICT ON CONSTRAINT circles_name_key DO NOTHING;`)
-	if err != nil {
-		return err
-	}
-	d.GetUnscrapedEro, err = d.Conn.Preparex(
-		`SELECT dlsite_ids 
-		FROM eroge 
-		WHERE scraped=False;`)
-	if err != nil {
-		return err
-	}
-	d.UpdateScrapedEro, err = d.Conn.Preparex(
-		`UPDATE eroge
-		SET scraped=True
-		WHERE dlsite_ids=$1;`)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }

@@ -1,0 +1,27 @@
+{% import "github.com/kipukun/sanic_highway/model" %}
+
+{% code 
+type AdminMainPage struct {
+	User *model.User
+}
+%}
+
+{% func (p *AdminMainPage) Title() %}
+<title>highway administration</title>
+{% endfunc %}
+
+
+{% func (p *AdminMainPage) Content() %}
+<h1>hello {%s p.User.Username %}</h1>
+<h2>operations</h2>
+<p>ingest will take in a .txt consisting of one fname per line.
+ it just ignores duplicates</p>
+<form action="/api/ingest" enctype="multipart/form-data" method="post">
+	<input type="file" name="file">
+	<input type="submit" value="ingest">
+</form>
+<p>export will export the db as a compressed JSON file, for easier importing later on.</p>
+<form action="/api/export" enctype="multipart/form-data" method="post">
+	<input type="submit" value="export">
+</form>
+{% endfunc %}
