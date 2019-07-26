@@ -57,6 +57,8 @@ func (s *Server) Start() {
 
 	// api routes
 	s.router.Handle("/api/edit/{id}", Handler{s, postEdit}).Methods("POST")
+	s.router.Handle("/api/ingest", Handler{s, postIngest}).Methods("POST")
+	s.router.Handle("/api/export", Handler{s, postExport}).Methods("POST")
 
 	s.router.NotFoundHandler = Handler{s, getStop}
 

@@ -2,22 +2,38 @@ package db
 
 import (
 	"bufio"
-	"os"
+	"bytes"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
-// Parse takes in pointers to a file and database, and inserts
-// each line into the database. Returns an error if encountered.
-func Parse(f *os.File, d *Database) error {
-	scanner := bufio.NewScanner(f)
+// Ingest takes in a Buffer and inserts each line into the DB.
+// Returns nil on success, the error otherwise.
+func (d *Database) Ingest(buf *bytes.Buffer) error {
+	scanner := bufio.NewScanner(buf)
+	tx, err := d.Conn.Beginx()
+	if err != nil {
+		return err
+	}
 	for scanner.Scan() {
 		fname := strings.TrimSuffix(scanner.Text(), ".rar")
-		_, err := d.IngestEro.Exec(fname)
+		_, err = tx.Stmtx(d.IngestEro).Exec(fname)
 		if err != nil {
-			return err
+			err = tx.Rollback()
+			if err != nil {
+				err = errors.Wrap(err, "ingest: could not roll back")
+				return err
+			}
 		}
 	}
-	if err := scanner.Err(); err != nil {
+	err = scanner.Err()
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		err = errors.Wrap(err, "ingest: could not commit")
 		return err
 	}
 	return nil

@@ -73,7 +73,18 @@ func (p *AdminEditPage) Title() string {
 func (p *AdminEditPage) StreamContent(qw422016 *qt422016.Writer) {
 //line templates/admin_edit.qtpl:19
 	qw422016.N().S(`
-<marquee><h1>editing</h1></marquee>
+<h1>editing</h1>
+<details>
+	<summary>press this for halp</summary>
+	<p>the dropdown is for the group you currently want to act on</p>
+	<p>the second field is for the name of the new group (if applicable)</p>
+	<p>third is for adding an id to the group selected in the dropdown</p>
+	<p><strong>the + button</strong>
+		will push the given id to the group (and make a new group)</p>
+	<p><strong>the - button</strong> will remove the LAST id from the group</p>
+	<p><strong>the delete button</strong> will delete the group in its entirety</p>
+	<p><strong>import</strong> will import more eroge! simply ignores duplicates</p>
+</details>
 <table>
 <tr>
 	<th>Title</th>
@@ -84,122 +95,129 @@ func (p *AdminEditPage) StreamContent(qw422016 *qt422016.Writer) {
 	</th>
 </tr>
 `)
-//line templates/admin_edit.qtpl:30
+//line templates/admin_edit.qtpl:41
 	for _, ero := range p.EroList {
-//line templates/admin_edit.qtpl:30
+//line templates/admin_edit.qtpl:41
 		qw422016.N().S(`
 <tr>
 	<td>
 		`)
-//line templates/admin_edit.qtpl:33
+//line templates/admin_edit.qtpl:44
 		qw422016.E().S(ero.Filename)
-//line templates/admin_edit.qtpl:33
+//line templates/admin_edit.qtpl:44
 		qw422016.N().S(`
-		<input type="button" value="Copy" />
+		<button type="button" value="`)
+//line templates/admin_edit.qtpl:45
+		qw422016.E().S(ero.Filename)
+//line templates/admin_edit.qtpl:45
+		qw422016.N().S(`" onclick=search(this)>
+			Search
+		</button>
 	</td>
 	<td>
 		`)
-//line templates/admin_edit.qtpl:37
+//line templates/admin_edit.qtpl:50
 		for t, d := range ero.Meta {
-//line templates/admin_edit.qtpl:37
+//line templates/admin_edit.qtpl:50
 			qw422016.N().S(`
 			<span><b>`)
-//line templates/admin_edit.qtpl:38
+//line templates/admin_edit.qtpl:51
 			qw422016.E().S(t)
-//line templates/admin_edit.qtpl:38
+//line templates/admin_edit.qtpl:51
 			qw422016.N().S(`:</b> `)
-//line templates/admin_edit.qtpl:38
+//line templates/admin_edit.qtpl:51
 			qw422016.E().S(fmt.Sprintf(strings.Join(d, ", ")))
-//line templates/admin_edit.qtpl:38
+//line templates/admin_edit.qtpl:51
 			qw422016.N().S(`</span>
 		`)
-//line templates/admin_edit.qtpl:39
+//line templates/admin_edit.qtpl:52
 		}
-//line templates/admin_edit.qtpl:39
+//line templates/admin_edit.qtpl:52
 		qw422016.N().S(`
 		<form action="/api/edit/`)
-//line templates/admin_edit.qtpl:40
+//line templates/admin_edit.qtpl:53
 		qw422016.N().D(ero.ID)
-//line templates/admin_edit.qtpl:40
+//line templates/admin_edit.qtpl:53
 		qw422016.N().S(`" method="POST">
 			<input type="hidden" name="page" value="`)
-//line templates/admin_edit.qtpl:41
+//line templates/admin_edit.qtpl:54
 		qw422016.N().D(p.Current)
-//line templates/admin_edit.qtpl:41
+//line templates/admin_edit.qtpl:54
 		qw422016.N().S(`">
 			<select name="group">
 				`)
-//line templates/admin_edit.qtpl:43
+//line templates/admin_edit.qtpl:56
 		for t, _ := range ero.Meta {
-//line templates/admin_edit.qtpl:43
+//line templates/admin_edit.qtpl:56
 			qw422016.N().S(`
 				<option value="`)
-//line templates/admin_edit.qtpl:44
+//line templates/admin_edit.qtpl:57
 			qw422016.E().S(t)
-//line templates/admin_edit.qtpl:44
+//line templates/admin_edit.qtpl:57
 			qw422016.N().S(`">`)
-//line templates/admin_edit.qtpl:44
+//line templates/admin_edit.qtpl:57
 			qw422016.E().S(t)
-//line templates/admin_edit.qtpl:44
+//line templates/admin_edit.qtpl:57
 			qw422016.N().S(`</option>
 				`)
-//line templates/admin_edit.qtpl:45
+//line templates/admin_edit.qtpl:58
 		}
-//line templates/admin_edit.qtpl:45
+//line templates/admin_edit.qtpl:58
 		qw422016.N().S(`
 				<option value="new">create new</option>
 			</select>
 			<input name="new-group" type="text" placeholder="new id group">
-			<input name="id" type="text" placeholder="id" required>
+			<input name="id" type="text" placeholder="id">
 			<input name="op" type="submit" value="+">
 			<input name="op" type="submit" value="-">
+			<input name="op" type="submit" value="delete">
 		</form>
 	</td>
 </tr>
 `)
-//line templates/admin_edit.qtpl:55
+//line templates/admin_edit.qtpl:69
 	}
-//line templates/admin_edit.qtpl:55
+//line templates/admin_edit.qtpl:69
 	qw422016.N().S(`
 </table>
 <center>
 	<div class="pg">
 		<a href="/admin/edit/page/`)
-//line templates/admin_edit.qtpl:59
+//line templates/admin_edit.qtpl:73
 	qw422016.N().D(p.Prev)
-//line templates/admin_edit.qtpl:59
+//line templates/admin_edit.qtpl:73
 	qw422016.N().S(`">&ltrif;</a>
 		`)
-//line templates/admin_edit.qtpl:60
+//line templates/admin_edit.qtpl:74
 	for _, pg := range p.Pagination {
-//line templates/admin_edit.qtpl:60
+//line templates/admin_edit.qtpl:74
 		qw422016.N().S(`
 			<a href="/admin/edit/page/`)
-//line templates/admin_edit.qtpl:61
+//line templates/admin_edit.qtpl:75
 		qw422016.N().D(pg)
-//line templates/admin_edit.qtpl:61
+//line templates/admin_edit.qtpl:75
 		qw422016.N().S(`" `)
-//line templates/admin_edit.qtpl:61
+//line templates/admin_edit.qtpl:75
 		if pg == p.Current {
-//line templates/admin_edit.qtpl:61
+//line templates/admin_edit.qtpl:75
 			qw422016.N().S(` class="current" `)
-//line templates/admin_edit.qtpl:61
+//line templates/admin_edit.qtpl:75
 		}
-//line templates/admin_edit.qtpl:61
+//line templates/admin_edit.qtpl:75
 		qw422016.N().S(`>`)
-//line templates/admin_edit.qtpl:61
+//line templates/admin_edit.qtpl:75
 		qw422016.N().D(pg)
-//line templates/admin_edit.qtpl:61
+//line templates/admin_edit.qtpl:75
 		qw422016.N().S(`</a>
 		`)
-//line templates/admin_edit.qtpl:62
+//line templates/admin_edit.qtpl:76
 	}
-//line templates/admin_edit.qtpl:62
+//line templates/admin_edit.qtpl:76
 	qw422016.N().S(`
 		<a href="/admin/edit/page/`)
-//line templates/admin_edit.qtpl:63
+//line templates/admin_edit.qtpl:77
 	qw422016.N().D(p.Next)
-//line templates/admin_edit.qtpl:63
+//line templates/admin_edit.qtpl:77
 	qw422016.N().S(`">&rtrif;</a>
 </center>
 
@@ -222,33 +240,37 @@ function both(f) {
 	localStorage.setItem("fill", f)
 	fill()
 }
+function search(e) {
+	var win = window.open("https://google.com/search?q="+e.value, '_blank');
+	win.focus();
+}
 </script>
 `)
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 }
 
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 func (p *AdminEditPage) WriteContent(qq422016 qtio422016.Writer) {
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 	p.StreamContent(qw422016)
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 	qt422016.ReleaseWriter(qw422016)
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 }
 
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 func (p *AdminEditPage) Content() string {
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 	p.WriteContent(qb422016)
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 	qs422016 := string(qb422016.B)
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 	return qs422016
-//line templates/admin_edit.qtpl:86
+//line templates/admin_edit.qtpl:104
 }

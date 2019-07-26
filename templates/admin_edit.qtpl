@@ -17,7 +17,18 @@ type AdminEditPage struct {
 
 
 {% func (p *AdminEditPage) Content() %}
-<marquee><h1>editing</h1></marquee>
+<h1>editing</h1>
+<details>
+	<summary>press this for halp</summary>
+	<p>the dropdown is for the group you currently want to act on</p>
+	<p>the second field is for the name of the new group (if applicable)</p>
+	<p>third is for adding an id to the group selected in the dropdown</p>
+	<p><strong>the + button</strong>
+		will push the given id to the group (and make a new group)</p>
+	<p><strong>the - button</strong> will remove the LAST id from the group</p>
+	<p><strong>the delete button</strong> will delete the group in its entirety</p>
+	<p><strong>import</strong> will import more eroge! simply ignores duplicates</p>
+</details>
 <table>
 <tr>
 	<th>Title</th>
@@ -31,7 +42,9 @@ type AdminEditPage struct {
 <tr>
 	<td>
 		{%s ero.Filename %}
-		<input type="button" value="Copy" />
+		<button type="button" value="{%s ero.Filename %}" onclick=search(this)>
+			Search
+		</button>
 	</td>
 	<td>
 		{% for t, d := range ero.Meta %}
@@ -46,9 +59,10 @@ type AdminEditPage struct {
 				<option value="new">create new</option>
 			</select>
 			<input name="new-group" type="text" placeholder="new id group">
-			<input name="id" type="text" placeholder="id" required>
+			<input name="id" type="text" placeholder="id">
 			<input name="op" type="submit" value="+">
 			<input name="op" type="submit" value="-">
+			<input name="op" type="submit" value="delete">
 		</form>
 	</td>
 </tr>
@@ -81,6 +95,10 @@ function fill() {
 function both(f) {
 	localStorage.setItem("fill", f)
 	fill()
+}
+function search(e) {
+	var win = window.open("https://google.com/search?q="+e.value, '_blank');
+	win.focus();
 }
 </script>
 {% endfunc %}

@@ -69,32 +69,43 @@ func (p *AdminMainPage) StreamContent(qw422016 *qt422016.Writer) {
 	qw422016.E().S(p.User.Username)
 //line templates/admin.qtpl:15
 	qw422016.N().S(`</h1>
+<h2>operations</h2>
+<p>ingest will take in a .txt consisting of one fname per line.
+ it just ignores duplicates</p>
+<form action="/api/ingest" enctype="multipart/form-data" method="post">
+	<input type="file" name="file">
+	<input type="submit" value="ingest">
+</form>
+<p>export will export the db as a compressed JSON file, for easier importing later on.</p>
+<form action="/api/export" enctype="multipart/form-data" method="post">
+	<input type="submit" value="export">
+</form>
 `)
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 }
 
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 func (p *AdminMainPage) WriteContent(qq422016 qtio422016.Writer) {
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 	qw422016 := qt422016.AcquireWriter(qq422016)
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 	p.StreamContent(qw422016)
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 	qt422016.ReleaseWriter(qw422016)
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 }
 
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 func (p *AdminMainPage) Content() string {
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 	qb422016 := qt422016.AcquireByteBuffer()
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 	p.WriteContent(qb422016)
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 	qs422016 := string(qb422016.B)
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 	qt422016.ReleaseByteBuffer(qb422016)
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 	return qs422016
-//line templates/admin.qtpl:16
+//line templates/admin.qtpl:27
 }

@@ -12,7 +12,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kipukun/sanic_highway/model"
 	"github.com/kipukun/sanic_highway/templates"
-	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -127,7 +126,7 @@ func getEro(s *Server, w http.ResponseWriter, r *http.Request) error {
 func getAdmin(s *Server, w http.ResponseWriter, r *http.Request) error {
 	u, err := authenticate(s, w, r)
 	if err != nil {
-		return err
+		return nil
 	}
 	p := &templates.AdminMainPage{u}
 	templates.WriteAdminPageTemplate(w, p)
@@ -137,7 +136,7 @@ func getAdminEdit(s *Server, w http.ResponseWriter, r *http.Request) error {
 	var el []model.Eroge
 	u, err := authenticate(s, w, r)
 	if err != nil {
-		return err
+		return nil
 	}
 	pg, pn, err := paginate(r)
 	if err != nil {
@@ -162,7 +161,7 @@ func getAdminEdit(s *Server, w http.ResponseWriter, r *http.Request) error {
 func getLogin(s *Server, w http.ResponseWriter, r *http.Request) error {
 	_, err := r.Cookie("id")
 	if err == nil {
-		http.Redirect(w, r, "/profile", http.StatusFound)
+		http.Redirect(w, r, "/admin", http.StatusFound)
 		return nil
 	}
 
@@ -207,47 +206,5 @@ func postLogin(s *Server, w http.ResponseWriter, r *http.Request) error {
 	http.SetCookie(w, cookie)
 	w.Write([]byte(`<html><body>you are now logged in.
 			go to the <a href="/admin">admin panel</a></body></html>`))
-	return nil
-}
-func getSignup(s *Server, w http.ResponseWriter, r *http.Request) error {
-	w.Write([]byte(`
-		<html><head><title>sekrit</title></head>
-		<body>
-		<form action="/auth/signup" method="post">
-			<input type="text" name="user" placeholder="user" required>
-			<input type="password" name="pass" placeholder="pass" required>
-			<input type="password" name="conf" placeholder="confirmation" required>
-			<input type="submit" value="submit">
-		</form>
-		</body></html>`))
-	return nil
-}
-func postSignup(s *Server, w http.ResponseWriter, r *http.Request) error {
-	user, pass := r.PostFormValue("user"), r.PostFormValue("pass")
-	if pass != r.PostFormValue("conf") {
-		return StatusError{http.StatusNotAcceptable,
-			errors.New(`password does not match confirmation`)}
-	}
-	id, err := uuid.NewUUID()
-	if err != nil {
-		return StatusError{http.StatusInternalServerError, err}
-	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(pass), 8)
-	if err != nil {
-		return StatusError{http.StatusInternalServerError, err}
-	}
-	_, err = s.DB.InsertUser.Exec(id, user, string(hash))
-	if err != nil {
-		if err, ok := err.(*pq.Error); ok {
-			switch err.Code.Name() {
-			case "unique_violation":
-				return StatusError{http.StatusConflict,
-					errors.New("username already exists")}
-			}
-		}
-		return StatusError{http.StatusInternalServerError, err}
-	}
-	w.Write([]byte(`<html><body>you've signed up. 
-			you can now <a href="/login">login</a></body></html>`))
 	return nil
 }

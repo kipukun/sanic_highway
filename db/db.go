@@ -9,10 +9,10 @@ import (
 // Database holds the connection to the DB
 // as well as prepared statements on that connection.
 type Database struct {
-	Conn                                            *sqlx.DB
-	Ero, Eros, IngestEro, InsertUser, CreateSession *sqlx.Stmt
-	CreateMeta, RemoveMeta, UpdateMeta, DeleteMeta  *sqlx.Stmt
-	User, Lookup                                    *sqlx.Stmt
+	Conn                                                 *sqlx.DB
+	All, Ero, Eros, IngestEro, InsertUser, CreateSession *sqlx.Stmt
+	CreateMeta, RemoveMeta, UpdateMeta, DeleteMeta       *sqlx.Stmt
+	User, Lookup                                         *sqlx.Stmt
 }
 
 type errExecer struct {
@@ -62,7 +62,7 @@ func (d *Database) create() error {
 	ee.exec(`CREATE TABLE IF NOT EXISTS eroge (
 			id SERIAL PRIMARY KEY,
 			fname text NOT NULL UNIQUE, 
-			metaids jsonb DEFAULT '{}');`)
+			metaids jsonb DEFAULT '{}'::jsonb);`)
 
 	ee.exec("ALTER SEQUENCE eroge_id_seq RESTART WITH 1000;")
 
@@ -83,6 +83,7 @@ func (d *Database) create() error {
 
 func (d *Database) prepare() error {
 	ee := &errExecer{c: d.Conn}
+	ee.prepare(&d.All, "SELECT * FROM eroge ORDER BY id ASC;")
 	ee.prepare(&d.Eros, "SELECT * FROM eroge ORDER BY id ASC OFFSET $1 LIMIT $2;")
 	ee.prepare(&d.Ero, `SELECT * FROM eroge WHERE id = $1`)
 	ee.prepare(&d.IngestEro, `INSERT INTO eroge (fname) VALUES ($1)
