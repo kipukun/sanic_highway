@@ -5,7 +5,7 @@ all: gen build run
 build:
 	go build ./$(BUILD_DIR)
 gen:
-	qtc -dir=templates
+	go generate ./$(BUILD_DIR)
 run:
 	./$(BINARY)
 
