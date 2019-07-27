@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/jmoiron/sqlx"
+	"github.com/kipukun/sanic_highway/config"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 )
@@ -37,10 +38,10 @@ func (ee *errExecer) prepare(prep **sqlx.Stmt, query string) {
 	ee.err = errors.Wrap(err, query)
 }
 
-// Init takes in a DB configuration string and returns a Database connection
+// Init takes in a config.Config and returns a Database connection
 // and nil, or nil and the error reported by prep functions otherwise.
-func Init(config string) (*Database, error) {
-	conn, err := sqlx.Open("postgres", config)
+func Init(c config.Config) (*Database, error) {
+	conn, err := sqlx.Open(c.DB.Driver, c.DB.DSN)
 	if err != nil {
 		return nil, err
 	}

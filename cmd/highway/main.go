@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	"github.com/google/uuid"
+	"github.com/kipukun/sanic_highway/config"
 	"github.com/kipukun/sanic_highway/db"
 	"github.com/kipukun/sanic_highway/http"
 	"github.com/lib/pq"
@@ -19,8 +20,26 @@ import (
 )
 
 func main() {
+	var c config.Config
+	fmt.Println("[*] reading config from config.toml...")
+	f, err := os.Open("config.toml")
+	if err != nil {
+		if os.IsNotExist(err) {
+			fmt.Println("[!] config.toml does not exist. using default config")
+			c = config.DefaultConfig
+		} else {
+			log.Fatal(err)
+		}
+	}
+	if c != config.DefaultConfig {
+		c, err = config.Load(f)
+		if err != nil {
+			log.Fatal(err)
+		}
+		f.Close()
+	}
 	fmt.Println("[*] initializing db...")
-	d, err := db.Init("postgres://postgres:cock@127.0.0.1/test?sslmode=disable")
+	d, err := db.Init(c)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,15 +50,15 @@ func main() {
 	if *user {
 		err = insert(d)
 		if err != nil {
-			fmt.Printf("error inserting user: %v\n", err)
+			fmt.Printf("\nerror inserting user: %v\n", err)
 			return
 		}
 		fmt.Println("\n[*] user successfully created!")
 		return
 	}
 
-	fmt.Println("[*] starting up http...")
-	srv := http.Init(d)
+	fmt.Printf("[*] starting up http at addr %s...\n", c.Web.Addr)
+	srv := http.Init(d, c)
 	srv.Start()
 
 }
