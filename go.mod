@@ -1,4 +1,4 @@
-module sanic_highway
+module github.com/kipukun/sanic_highway
 
 go 1.12
 
@@ -14,7 +14,6 @@ require (
 	github.com/gorilla/mux v1.7.3
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/kennygrant/sanitize v1.2.4 // indirect
-	github.com/kipukun/sanic_highway v0.0.0-20190727005814-e18d3aaf005c
 	github.com/klauspost/compress v1.7.4 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/lib/pq v1.2.0
