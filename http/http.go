@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/kipukun/sanic_highway/config"
 	"github.com/kipukun/sanic_highway/db"
 )
 
@@ -18,15 +19,16 @@ type Server struct {
 	DB     *db.Database
 	router *mux.Router
 	HS     *http.Server
+	Config config.Config
 }
 
 // Init takes in a Database and returns a new Server intialized with the
 // default mux.Router and the database connection.
-func Init(d *db.Database) *Server {
+func Init(d *db.Database, c config.Config) *Server {
 	r := mux.NewRouter()
 	h := &http.Server{
 		Handler:      r,
-		Addr:         ":1337",
+		Addr:         c.Web.Addr,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
@@ -34,6 +36,7 @@ func Init(d *db.Database) *Server {
 		DB:     d,
 		router: r,
 		HS:     h,
+		Config: c,
 	}
 	return srv
 }
